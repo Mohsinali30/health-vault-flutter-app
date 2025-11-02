@@ -1,3 +1,4 @@
+import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white, // Overall background is white
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: primaryGreen, // Top app bar green
         title: const Text(
           'Health Vault',
@@ -145,7 +147,10 @@ class HomeScreen extends StatelessWidget {
                          );
                          break;
                        case 1:
-                         print("Navigate to Medical History screen");
+                         Navigator.push(
+                             context,
+                             MaterialPageRoute(builder: (context) =>  Viewallfiles())
+                         );
                          break;
                        case 2:
                          print("Navigate to Prescriptions screen");
@@ -182,36 +187,42 @@ class HomeScreen extends StatelessWidget {
             ),
             RecentActivityCard(
               icon: Icons.description,
-              title: 'Blood Test Results',
+              title: Text('Blood Test Results'),
               subtitle: 'Uploaded 2 days ago',
               onViewDetails: () {
                 print('View Blood Test Details');
                 // Navigate to details screen
               },
-            ),
+              buttonicon: Icons.remove_red_eye_outlined,),
+
             RecentActivityCard(
               icon: Icons.receipt_long, // Prescription-like icon
-              title: 'Prescription Refill',
+              title: Text("Prescription Refill"),
               subtitle: 'Dr. Me - 3 days remaining',
               onViewDetails: () {
                 print('View Prescription Refill Details');
                 // Navigate to details screen
               },
-            ),
+              buttonicon: Icons.remove_red_eye_outlined,
+
+      ),
             // Add more RecentActivityCard widgets as needed
             RecentActivityCard(
               icon: Icons.calendar_today,
-              title: 'Upcoming Appointment',
+              title: Text('Upcoming Appointment'),
               subtitle: 'Cardiologist - Tomorrow at 10 AM',
               onViewDetails: () {
                 print('View Appointment Details');
               },
+              buttonicon: Icons.remove_red_eye_outlined,
+
             ),
 
-            const SizedBox(height: 30), // Spacing at the bottom
-          ],
-        ),
-      ),
-    );
+            const SizedBox(height: 30),
+       // Spacing at the bottom
+    ]  ),
+
+    )
+      );
   }
 }

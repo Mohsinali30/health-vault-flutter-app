@@ -1,14 +1,13 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_practice/Supabase_services/bucketoperations.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
-import 'package:firebase_practice/utiles/Utiles.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:io';
 import '../../utiles/AppColors.dart';
+import 'dart:io';
+import '../../utiles/Utiles.dart';
 
 enum HealthCategory {
   diagnostics,
@@ -45,24 +44,23 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  PlatformFile? _selectedFile;
-  //hold the selected category (will be used for API)
+  File? _selectedFile;
   HealthCategory? _selectedCategory;
- final databaseref= FirebaseDatabase.instance.ref('documents');
 
 // Get a reference your Supabase client
-  final supabaseRef = Supabase.instance.client;
+  final supaBaseRef = Supabase.instance.client;
+  final String bucketName = 'files';
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = HealthCategory.diagnostics;
-    BucketOperation.Createbucket();
+    fetchallFiles();
   }
   // --- METHODS ---
   // 1. File Picker Logic
   Future<void> _pickFile() async {
-    final provider= Provider.of<Loadingstate>( context,);
+    final provider= Provider.of<Loadingstate>( context,listen: false);
     // Reset file and set loading state
     setState(() {
       _selectedFile = null;
@@ -78,8 +76,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
       if (result != null && result.files.isNotEmpty) {
         // We only requested a single file, so take the first one
-        PlatformFile file = result.files.first;
-
+        File file = File(result.files.single.path!);
         setState(() {
           _selectedFile = file;
         });
@@ -89,7 +86,7 @@ class _UploadScreenState extends State<UploadScreen> {
         provider.setloading(false);
       }
     } catch (e) {
-      print("File picking error: $e");
+      debugPrint("File picking error: ${e.toString()}");
       provider.setloading(false);
       // Show user feedback for error
       if (mounted) {
@@ -99,75 +96,91 @@ class _UploadScreenState extends State<UploadScreen> {
       }
     }
   }
-  // 2. Upload Logic (Simulated)
-  void _startUpload() {
-    final provider= Provider.of<Loadingstate>( context,);
-    if (_selectedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a file first.')),
-      );
+
+  void _startUpload() async {
+    final provider = Provider.of<Loadingstate>(context, listen: false);
+   final fileToUpload= _selectedFile;
+    provider.setloading(true);
+
+    final String fullPath = fileToUpload!.path;
+    final String name = fullPath.split('/').last; // Path se sirf naam lein
+
+    // Unique file name banane ke liye
+    final String filpathname = "${DateTime.now().microsecondsSinceEpoch}_$name";
+    if (fileToUpload == null) {
+      //here ican callback to fetchallfiles function for auto update in instate fun
+      setState(() {
+        fetchallFiles();
+      });
+      provider.setloading(false);
+      Utiles().toastMessage("Error: File path is not accessible.");
       return;
     }
 
-    // The variables we would send to the API:
-    debugPrint('--- Starting Upload ---');
-    debugPrint('File Name: ${_selectedFile!.name}');
-    debugPrint('File Path: ${_selectedFile!.path}'); // Use this path to read the bytes for API upload
-    debugPrint('Selected Category: ${_selectedCategory!.name}'); // This is the value used in the back-end
+    // Create a unique file path within the bucket
+    // Format: category/filename_timestamp.ext
+  //  final fileExtension = fileToUpload.extension ?? 'bin';
+   // final storagePath = '${categoryName}/${DateTime.now().microsecondsSinceEpoch}.${fileMimeType}';
 
-   provider.setloading(true);
+    try {
+          await supaBaseRef.storage.from("files").upload(filpathname, fileToUpload);
 
-    // Simulate API delay
-    Future.delayed(const Duration(seconds: 3), () {
-      provider.setloading(false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File Upload Simulation Complete!')),
-        );
-        // Clear the form after successful upload
+        Utiles().toastMessage('File Upload Successful!');
         setState(() {
-          _selectedFile = null;
+          _selectedFile = null; // Clear file selection
           _selectedCategory = HealthCategory.diagnostics;
         });
       }
-    });
+
+    } on StorageException catch (e) {
+      // Catch Supabase-specific storage errors (e.g., policy violations)
+      Utiles().toastMessage("Storage Error: ${e.message}");
+    } catch (e) {
+      // Catch general file system or network errors
+      Utiles().toastMessage("Upload failed: ${e.toString()}");
+    } finally {
+      // 5. Stop Loading
+      provider.setloading(false);
+    }
   }
   // --- UI BUILDING BLOCKS ---
   // Displays the selected file's summary
+  // Update the function signature
   Widget _buildFileSummary() {
     if (_selectedFile == null) {
       return Container();
     }
 
-    // Convert file size from bytes to a human-readable format (MB or KB)
-    String fileSize = _selectedFile!.size >= 1024 * 1024
-        ? '${(_selectedFile!.size / (1024 * 1024)).toStringAsFixed(2)} MB'
-        : '${(_selectedFile!.size / 1024).toStringAsFixed(2)} KB';
-
-    String fileExtension = _selectedFile!.extension?.toUpperCase() ?? 'N/A';
+    // File ka naam extract karne ke liye 'path' library use karna behtar hai.
+    // Yahan hum sirf path ka aakhri hissa (file name) lenge.
+    // Ya phir aap ek naya state variable bana sakte the (e.g., _selectedFileName).
+    // Abhi hum path se naam nikal rahe hain.
+    final fileName = _selectedFile!.path.split('/').last;
 
     return Card(
+
+      // ... baaki UI code wahi rahega
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
         leading: Icon(
-          fileExtension == 'PDF' ? Icons.picture_as_pdf : Icons.image,
-          color: primaryGreen,
+          Icons.drive_file_move_rounded,color: primaryGreen,
           size: 40,
         ),
         title: Text(
-          _selectedFile!.name,
+          fileName, // <--- File ka Naam
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Type: $fileExtension | Size: $fileSize'),
+        // subtitle: Text('Path: ${_selectedFile!.path}'), // <--- Path dikhane ke liye
         trailing: IconButton(
           icon: const Icon(Icons.close, color: Colors.red),
           onPressed: () {
             setState(() {
-              _selectedFile = null;
+              _selectedFile = null; // File clear karein
             });
           },
         ),
@@ -175,9 +188,23 @@ class _UploadScreenState extends State<UploadScreen> {
     );
   }
 
+
+
+  Future<void> fetchallFiles() async{
+    final provider= Provider.of<Loadingstate>( context,listen: false);
+    provider.setloading(true);
+
+    try{
+      final List<FileObject> responsefile = await supaBaseRef.storage.from("files").list();
+       provider.setAllFiles(responsefile);
+    }catch(e){
+      Utiles().toastMessage(e.toString());
+    }
+    provider.setloading(false);
+  }
+
   @override
   Widget build(BuildContext context) {
-bool _isLoading= Loadingstate().isLoading;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryGreen,
@@ -186,94 +213,100 @@ bool _isLoading= Loadingstate().isLoading;
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children:[
+      body: Consumer<Loadingstate>(
+          builder: (context, value, child) {
+            bool _isLoading = value.isLoading; // Read the state correctly
+
+            return SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children:[
 
 
-            const Card(
-              color: lightGreen,
-              elevation: 4,
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  '1. Select the document category.\n2. Tap "Select File" to browse and choose your document (PDF, JPG, etc.).\n3. Tap "Upload" to secure your record.',
-                  style: TextStyle(color: Colors.white, fontSize: 15),
+              const Card(
+                color: lightGreen,
+                elevation: 4,
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    '1. Select the document category.\n2. Tap "Select File" to browse and choose your document (PDF, JPG, etc.).\n3. Tap "Upload" to secure your record.',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 25),
+              const SizedBox(height: 25),
 
-            // Category Selection Label
-            const Text(
-              'Select Document Category',
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Dropdown Button
-            _buildCategoryDropdown(),
-
-            const SizedBox(height: 30),
-
-            // Select File Button
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _pickFile,
-              icon: const Icon(Icons.folder_open),
-              label: Text(_selectedFile == null ? 'Select File' : 'Change File'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              // Category Selection Label
+              const Text(
+                'Select Document Category',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
 
-            // Pre-upload UI: File Summary
-            _buildFileSummary(),
-            const SizedBox(height: 40),
+              // Dropdown Button
+              _buildCategoryDropdown(),
 
-            // Upload Button (Conditional)
-            if (_isLoading)
-              const Center(
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(color: primaryGreen),
-                    SizedBox(height: 10),
-                    Text('Processing file...'),
-                  ],
+              const SizedBox(height: 30),
+
+              // Select File Button
+              ElevatedButton.icon(
+                onPressed: _isLoading ? null : _pickFile,
+                icon: const Icon(Icons.folder_open),
+                label: Text(_selectedFile == null ? 'Select File' : 'Change File'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
-              )
-            else
-              SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _selectedFile != null ? _startUpload : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedFile != null ? primaryGreen : Colors.grey,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+              ),
+
+              // Pre-upload UI: File Summary
+           //   _buildFileSummary(),
+              _buildFileSummary(),
+              const SizedBox(height: 40),
+
+              // Upload Button (Conditional)
+              if (_isLoading)
+                const Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(color: primaryGreen),
+                      SizedBox(height: 10),
+                      Text('Processing file...'),
+                    ],
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _selectedFile != null ? _startUpload : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _selectedFile != null ? primaryGreen : Colors.grey,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    child: const Text(
+                      'Upload Record',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    'Upload Record',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),);}
       ),
     );
   }

@@ -5,16 +5,18 @@ import 'AppColors.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final IconData icon;
-  final String title;
+  final Widget title;
   final String subtitle;
   final VoidCallback onViewDetails;
+  final IconData  buttonicon;
 
-  const RecentActivityCard({
+   RecentActivityCard({
     Key? key,
     required this.icon,
     required this.title,
-    required this.subtitle,
+     this.subtitle='',
     required this.onViewDetails,
+    required this.buttonicon,
   }) : super(key: key);
 
   @override
@@ -38,7 +40,7 @@ class RecentActivityCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                       "$title",
                         style: const TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
@@ -71,10 +73,7 @@ class RecentActivityCard extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                child: const Text(
-                  'View Details',
-                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
-                ),
+                child: Icon(buttonicon,size: 25,color: lightGreen,)
               ),
             ),
           ],

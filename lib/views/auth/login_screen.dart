@@ -3,7 +3,6 @@ import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:firebase_practice/views/HomeScreen/homescreen.dart';
 import 'package:firebase_practice/views/auth/SignUp_Screen.dart';
-import 'package:firebase_practice/views/auth/login_with_phoneNumber.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../View_view_Model/provider.dart';
@@ -35,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleSignIn(BuildContext context, email,password) {
     final loadingprovider = Provider.of<Loadingstate>(context, listen: false);
+
     // Check validation state using the FormKey
     if (_formKey.currentState!.validate()) {
       loadingprovider.setloading(true);
