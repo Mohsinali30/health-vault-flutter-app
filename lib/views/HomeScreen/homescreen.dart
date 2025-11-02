@@ -1,15 +1,34 @@
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../Supabase_services/bucketoperations.dart';
+import '../../View_view_Model/provider.dart';
 import '../../utiles/AppColors.dart';
 import '../../utiles/QuickActionButton.dart';
 import '../../utiles/RecentActivityCard.dart';
 import '../Upload_Docs/uploadScreen.dart' hide primaryGreen, lightGreen;
 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+class _HomeScreenState extends State<HomeScreen> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<Loadingstate>(context, listen: false);
+      // Assuming 'fetchallFiles' is now correctly moved to your provider class (as advised previously)
+      provider.fetchallFiles(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +61,15 @@ class HomeScreen extends StatelessWidget {
           child: Container(),
         ),
       ),
-      body: SingleChildScrollView(
+      body: Consumer<Loadingstate>(
+          builder: (context, provider, child) {
+            final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
+            final recentFiles = files.take(2).toList();
+            if (provider.isLoading && provider.allFiles.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            // List ki lambai (length) ko use karein
+            return SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children:[
@@ -120,7 +147,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisCount: 3,
                   crossAxisSpacing: 12.0,
                   mainAxisSpacing: 12.0,
-                  childAspectRatio: 1.4,
+                  childAspectRatio: 1.0,
                 ),
                 itemBuilder: (context, index) {
                   // Example data for Quick Actions
@@ -185,44 +212,27 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            RecentActivityCard(
-              icon: Icons.description,
-              title: Text('Blood Test Results'),
-              subtitle: 'Uploaded 2 days ago',
-              onViewDetails: () {
-                print('View Blood Test Details');
-                // Navigate to details screen
-              },
-              buttonicon: Icons.remove_red_eye_outlined,),
 
-            RecentActivityCard(
-              icon: Icons.receipt_long, // Prescription-like icon
-              title: Text("Prescription Refill"),
-              subtitle: 'Dr. Me - 3 days remaining',
-              onViewDetails: () {
-                print('View Prescription Refill Details');
-                // Navigate to details screen
-              },
-              buttonicon: Icons.remove_red_eye_outlined,
+            ListView.builder(
+                shrinkWrap: true,
+            itemCount:recentFiles.length,
+            itemBuilder: (context, index) {
+            final file = recentFiles[index];
+            return RecentActivityCard(
+            icon: Icons.drive_file_move_outline,
+            title:'${file.name}',
+            subtitle: '',
+            onViewDetails:()=>BucketOperation().DownloadAndOpen(file.name),
+            buttonicon: 'view',
 
-      ),
-            // Add more RecentActivityCard widgets as needed
-            RecentActivityCard(
-              icon: Icons.calendar_today,
-              title: Text('Upcoming Appointment'),
-              subtitle: 'Cardiologist - Tomorrow at 10 AM',
-              onViewDetails: () {
-                print('View Appointment Details');
-              },
-              buttonicon: Icons.remove_red_eye_outlined,
+            );
+            }
 
+       // Spacing at the bottom
+            )]
             ),
 
-            const SizedBox(height: 30),
-       // Spacing at the bottom
-    ]  ),
-
-    )
+    );})
       );
   }
 }

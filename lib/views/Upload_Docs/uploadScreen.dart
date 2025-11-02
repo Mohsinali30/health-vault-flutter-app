@@ -55,7 +55,8 @@ class _UploadScreenState extends State<UploadScreen> {
   void initState() {
     super.initState();
     _selectedCategory = HealthCategory.diagnostics;
-    fetchallFiles();
+    final provider= Provider.of<Loadingstate>( context,listen: false);
+    provider.fetchallFiles(context);
   }
   // --- METHODS ---
   // 1. File Picker Logic
@@ -109,9 +110,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final String filpathname = "${DateTime.now().microsecondsSinceEpoch}_$name";
     if (fileToUpload == null) {
       //here ican callback to fetchallfiles function for auto update in instate fun
-      setState(() {
-        fetchallFiles();
-      });
+    provider.fetchallFiles(context);
       provider.setloading(false);
       Utiles().toastMessage("Error: File path is not accessible.");
       return;
@@ -127,6 +126,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
       if (mounted) {
         Utiles().toastMessage('File Upload Successful!');
+        provider.fetchallFiles(context);
         setState(() {
           _selectedFile = null; // Clear file selection
           _selectedCategory = HealthCategory.diagnostics;
@@ -189,19 +189,6 @@ class _UploadScreenState extends State<UploadScreen> {
   }
 
 
-
-  Future<void> fetchallFiles() async{
-    final provider= Provider.of<Loadingstate>( context,listen: false);
-    provider.setloading(true);
-
-    try{
-      final List<FileObject> responsefile = await supaBaseRef.storage.from("files").list();
-       provider.setAllFiles(responsefile);
-    }catch(e){
-      Utiles().toastMessage(e.toString());
-    }
-    provider.setloading(false);
-  }
 
   @override
   Widget build(BuildContext context) {

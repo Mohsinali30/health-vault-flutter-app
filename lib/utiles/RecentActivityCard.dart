@@ -5,10 +5,10 @@ import 'AppColors.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final IconData icon;
-  final Widget title;
+  final String title;
   final String subtitle;
   final VoidCallback onViewDetails;
-  final IconData  buttonicon;
+  final String  buttonicon;
 
    RecentActivityCard({
     Key? key,
@@ -21,10 +21,11 @@ class RecentActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return
+      Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: cardBackgroundColor, // Use the defined card background color
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,11 +48,11 @@ class RecentActivityCard extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(height: 4.0),
+                      const SizedBox(height: 0.0),
                       Text(
                         subtitle,
                         style: const TextStyle(
-                          fontSize: 13.0,
+                          fontSize: 0.0,
                           color: secondaryTextColor,
                         ),
                       ),
@@ -66,14 +67,21 @@ class RecentActivityCard extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onViewDetails,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryGreen, // Button background color
+                  backgroundColor: Colors.white, // Button background color
                   foregroundColor: Colors.white, // Button text color
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(34.0),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                 ),
-                child: Icon(buttonicon,size: 25,color: lightGreen,)
+                child:  Text(
+                  "$buttonicon",
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: primaryGreen,
+                  ),
+                ),
               ),
             ),
           ],

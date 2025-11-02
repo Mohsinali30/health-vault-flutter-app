@@ -1,10 +1,18 @@
 
 
+import 'dart:io';
+
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../View_view_Model/provider.dart';
+
 class BucketOperation{
+  final supaBaseRef = Supabase.instance.client;
 
      static Createbucket()async{
        final suparef= Supabase.instance.client;
@@ -16,6 +24,46 @@ class BucketOperation{
          Utiles().toastMessage(e.toString());
        }
 
+     }
+
+
+     Future<void> DownloadAndOpen(String filepath)async
+     {//final provider= Provider.of<Loadingstate>(context,listen: false);
+
+    // provider.setloading(true);
+     try{
+       final tempDir= await getTemporaryDirectory();
+       final localpath = "${tempDir.path}/${filepath.split('/').last}";
+       final localFile =File(localpath);
+       final fileData = await supaBaseRef.storage.from("files").download(filepath);
+       await localFile.writeAsBytes(fileData);
+       await OpenFilex.open(localpath);
+
+     }catch(e){
+       Utiles().toastMessage(e.toString());
+     }
+   //  provider.setloading(false);
+     }
+
+     Future<void> DeleteFile(String filepath)async {       // final provider= Provider.of<Loadingstate>(context,listen: false);
+
+    // provider.setloading(true);
+     try{
+       final fileData = await supaBaseRef.storage.from("files").remove([filepath]);
+       if (fileData.isNotEmpty && fileData[0].name != null) {
+         Utiles().toastMessage("${fileData[0].name} successfully deleted!");
+        // provider.fetchallFiles(context);
+         // Agar files list UI mein dikha rahe hain, toh us list ko refresh karein
+         // Example: await fetchallFiles();
+       } else {
+         // Agar response empty hai ya unexpected hai
+         Utiles().toastMessage("File deletion request sent.");
+       }
+
+     }catch(e){
+       Utiles().toastMessage(e.toString());
+     }
+    // provider.setloading(false);
      }
 
 
