@@ -1,3 +1,5 @@
+import 'package:firebase_practice/tips_Screen.dart';
+import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<Loadingstate>(context, listen: false);
       // Assuming 'fetchallFiles' is now correctly moved to your provider class (as advised previously)
-      provider.fetchallFiles(context);
+      provider.showFiles(context, provider.category);
     });
   }
 
@@ -186,10 +188,16 @@ class _HomeScreenState extends State<HomeScreen> {
                          print("Navigate to Reminders screen");
                          break;
                        case 4:
-                         print("Navigate to Appointments screen");
+                         Navigator.push(
+                             context,
+                             MaterialPageRoute(builder: (context) =>  EventScreen())
+                         ) ;
                          break;
                        case 5:
-                         print("Navigate to Wellness Tips screen");
+                         Navigator.push(
+                             context,
+                             MaterialPageRoute(builder: (context) =>  ShowTipsScreen())
+                         ) ;
                          break;
                        default:
                          print('${quickActions[index]['label']} tapped!');

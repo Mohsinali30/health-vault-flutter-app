@@ -13,10 +13,8 @@ import '../View_view_Model/provider.dart';
 
 class BucketOperation{
   final supaBaseRef = Supabase.instance.client;
-
      static Createbucket()async{
        final suparef= Supabase.instance.client;
-
        try{
          await suparef.storage.createBucket('documents');
          debugPrint("Bucket Created");
@@ -28,10 +26,12 @@ class BucketOperation{
 
 
      Future<void> DownloadAndOpen(String filepath)async
-     {//final provider= Provider.of<Loadingstate>(context,listen: false);
+     {//final provider= Provider.of<Loadingstate>(context,listen: false);/
 
-    // provider.setloading(true);
-     try{
+
+       try{
+
+
        final tempDir= await getTemporaryDirectory();
        final localpath = "${tempDir.path}/${filepath.split('/').last}";
        final localFile =File(localpath);
@@ -52,6 +52,7 @@ class BucketOperation{
        final fileData = await supaBaseRef.storage.from("files").remove([filepath]);
        if (fileData.isNotEmpty && fileData[0].name != null) {
          Utiles().toastMessage("${fileData[0].name} successfully deleted!");
+
         // provider.fetchallFiles(context);
          // Agar files list UI mein dikha rahe hain, toh us list ko refresh karein
          // Example: await fetchallFiles();

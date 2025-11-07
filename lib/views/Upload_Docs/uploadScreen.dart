@@ -9,7 +9,7 @@ import '../../utiles/AppColors.dart';
 import 'dart:io';
 import '../../utiles/Utiles.dart';
 
-enum HealthCategory {
+enum HealthCategory   {
   diagnostics,
   medication,
   visits,
@@ -46,7 +46,6 @@ class UploadScreen extends StatefulWidget {
 class _UploadScreenState extends State<UploadScreen> {
   File? _selectedFile;
   HealthCategory? _selectedCategory;
-
 // Get a reference your Supabase client
   final supaBaseRef = Supabase.instance.client;
   final String bucketName = 'files';
@@ -56,9 +55,24 @@ class _UploadScreenState extends State<UploadScreen> {
     super.initState();
     _selectedCategory = HealthCategory.diagnostics;
     final provider= Provider.of<Loadingstate>( context,listen: false);
-    provider.fetchallFiles(context);
+    provider.showFiles(context, provider.category);
   }
   // --- METHODS ---
+
+  void handleUpload() {
+    if (_selectedCategory == null) {
+      Utiles().toastMessage("Please select a file category.");
+      return;
+    }
+
+    // ✅ CORRECT WAY: Value is accessed and used inside the function body
+    final HealthCategory category = _selectedCategory!;
+    final String folderName = category.name;
+
+
+  }
+
+
   // 1. File Picker Logic
   Future<void> _pickFile() async {
     final provider= Provider.of<Loadingstate>( context,listen: false);
@@ -98,19 +112,27 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
-  void _startUpload() async {
+  void _startUpload() async
+  {
     final provider = Provider.of<Loadingstate>(context, listen: false);
-   final fileToUpload= _selectedFile;
+    if (_selectedCategory == null) {
+      Utiles().toastMessage("Please select a file category.");
+      return;
+    }
+
+    // ✅ CORRECT WAY: Value is accessed and used inside the function body
+    final HealthCategory category = _selectedCategory!;
+    final String folderName = category.name;
+
+    final fileToUpload= _selectedFile;
     provider.setloading(true);
 
-    final String fullPath = fileToUpload!.path;
-    final String name = fullPath.split('/').last; // Path se sirf naam lein
-
-    // Unique file name banane ke liye
-    final String filpathname = "${DateTime.now().microsecondsSinceEpoch}_$name";
+    final String file = fileToUpload!.path;
+    final fileName = fileToUpload.path.split('/').last;
+    final String filpathname = '$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
     if (fileToUpload == null) {
       //here ican callback to fetchallfiles function for auto update in instate fun
-    provider.fetchallFiles(context);
+      provider.showFiles(context, provider.category);
       provider.setloading(false);
       Utiles().toastMessage("Error: File path is not accessible.");
       return;
@@ -118,15 +140,15 @@ class _UploadScreenState extends State<UploadScreen> {
 
     // Create a unique file path within the bucket
     // Format: category/filename_timestamp.ext
-  //  final fileExtension = fileToUpload.extension ?? 'bin';
-   // final storagePath = '${categoryName}/${DateTime.now().microsecondsSinceEpoch}.${fileMimeType}';
+    //  final fileExtension = fileToUpload.extension ?? 'bin';
+    // final storagePath = '${categoryName}/${DateTime.now().microsecondsSinceEpoch}.${fileMimeType}';
 
     try {
-          await supaBaseRef.storage.from("files").upload(filpathname, fileToUpload);
+      await supaBaseRef.storage.from('files').upload(filpathname, fileToUpload);
 
       if (mounted) {
-        Utiles().toastMessage('File Upload Successful!');
-        provider.fetchallFiles(context);
+        Utiles().toastMessage('File Upload Successful!  ${filpathname.toString()}');
+        provider.showFiles(context, provider.category);
         setState(() {
           _selectedFile = null; // Clear file selection
           _selectedCategory = HealthCategory.diagnostics;

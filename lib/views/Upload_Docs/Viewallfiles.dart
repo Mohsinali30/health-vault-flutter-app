@@ -1,10 +1,10 @@
-import 'package:firebase_practice/views/Upload_Docs/uploadScreen.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../Supabase_services/bucketoperations.dart';
+import '../../utiles/CustomElevatedButton.dart';
 
 class Viewallfiles extends StatefulWidget {
 
@@ -13,19 +13,15 @@ class Viewallfiles extends StatefulWidget {
   @override
   State<Viewallfiles> createState() => _ViewallfilesState();
 }
-
 class _ViewallfilesState extends State<Viewallfiles> {
   final supaBaseRef = Supabase.instance.client;
-  final UploadScreen fetch =UploadScreen();
-
 
 @override
   void initState() {
     // TODO: implement initState
     super.initState();
     final provider= Provider.of<Loadingstate>( context,listen: false);
-    provider.fetchallFiles(context);
-
+    provider.showFiles(context, provider.category);
 }
 
   @override
@@ -46,95 +42,161 @@ class _ViewallfilesState extends State<Viewallfiles> {
           final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
 
           // List ki lambai (length) ko use karein
-          return ListView.builder(
-            itemCount: files.length,
-            itemBuilder: (context, index) {
-              final file = files[index];
-              return
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                color: cardBackgroundColor, // Use the defined card background color
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.drive_folder_upload_outlined, size: 28.0, color: primaryGreen),
-                          const SizedBox(width: 12.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                            Text(file.name ?? 'Unknown File',
-                                  style:  TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: textColor,
+          return Column(children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
+                   CustomElevatedButton(text: 'Diagnostics (Lab Reports)', onPressed: (){
+                     provider.setcategory('diagnostics');
+                     provider.showFiles(context, provider.category);
+                   }),
+                    SizedBox(width: 12,),
+                    CustomElevatedButton(text: 'Medication / Prescriptions', onPressed: (){
+                      provider.setcategory('medication');
+                      provider.showFiles(context, provider.category);
+                    }),
+                    SizedBox(width: 12,),
+                    CustomElevatedButton(text: 'Visits / Consultations', onPressed: (){
+                      provider.setcategory('visits');
+                      provider.showFiles(context, provider.category);
+                    }),
+                    SizedBox(width: 12,),
+                    CustomElevatedButton(text: 'Surgeries / Procedures', onPressed: (){
+                      provider.setcategory('surgeries');
+                      provider.showFiles(context, provider.category);
+                    }),
+                    SizedBox(width: 12,),
+                    CustomElevatedButton(text: 'Vaccination Certificates', onPressed: (){
+                      provider.setcategory('vaccinations');
+                      provider.showFiles(context, provider.category);
+                    }
+                    ),
+                    SizedBox(width: 12,),
+                    CustomElevatedButton(text: 'Others', onPressed: (){
+                      provider.setcategory('other');
+                    provider.showFiles(context, provider.category);
+                    }),
+                  ],),
+                ),
+
+          Expanded(
+            child:
+            files.isEmpty
+                ? Center(
+              child: Text(
+                '📁 No files uploaded yet in "${provider.category}" folder.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
+              ),
+            )
+                :
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ListView.builder(
+                shrinkWrap: true,
+              itemCount: files.length,
+                itemBuilder: (context, index) {
+                  final file = files[index];
+                  return
+                    Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      color: cardBackgroundColor, // Use the defined card background color
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.drive_folder_upload_outlined, size: 28.0, color: primaryGreen),
+                                const SizedBox(width: 12.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(file.name ?? 'Unknown File',
+                                        style:  TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4.0),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 4.0),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16.0),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Row(
-                          children: [
-                            ElevatedButton(
-                                onPressed:()=>BucketOperation().DeleteFile(file.name),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: primaryGreen, // Button background color
-                                  foregroundColor: Colors.white, // Button text color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
+                            const SizedBox(height: 16.0),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Row(
+                                children: [
+                                  ElevatedButton(
+                                      onPressed:()=>BucketOperation().DeleteFile('${provider.category}/${file.name}'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryGreen, // Button background color
+                                        foregroundColor: Colors.white, // Button text color
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                      ),
+                                      child: Icon(Icons.delete_outline_outlined ,size: 25,color: Colors.white,)
                                   ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                ),
-                                child: Icon(Icons.delete_outline_outlined ,size: 25,color: Colors.white,)
-                            ),
-                            SizedBox(width: 13,),
-                            ElevatedButton(
-                                onPressed:()=> BucketOperation().DownloadAndOpen(file.name),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: primaryGreen, // Button background color
-                                  foregroundColor: Colors.white, // Button text color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                ),
-                                child: Icon(Icons.download_for_offline_outlined ,size: 25,color: Colors.white,)
-                            ),
 
+                                  SizedBox(width: 13,),
+                                  ElevatedButton(
+                                      onPressed:()=> BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryGreen, // Button background color
+                                        foregroundColor: Colors.white, // Button text color
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                      ),
+                                      child: Icon(Icons.download_for_offline_outlined ,size: 25,color: Colors.white,)
+                                  ),
+
+                                ],
+
+
+
+                              ),
+                            ),
                           ],
-
-
-
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              );
+                    );
 
-            },
-          );
+                },
+              ),
+            ),
+          )
+          ],) ;
+
         },
       ),
     );
 
 
-  }
 
 
 
   }
+
+
+
+
+}
+
+  
 
 
