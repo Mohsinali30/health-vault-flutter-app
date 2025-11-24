@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/models/eventModel.dart';
@@ -9,44 +10,24 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart'; // Import for date formatting
 
 
+///Event Display Screen
 class EventScreen extends StatefulWidget {
-
-
   const EventScreen({super.key});
-
   @override
   State<EventScreen> createState() => _EventScreenState();
 }
-
 class _EventScreenState extends State<EventScreen> {
-
-  Future<void> getdata ()async{
-    final prov =Provider.of<EventProvider>(context,listen: false);
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection("Events").get();
-
-    // Load hone se pehle list clear karna zaroori hai, taaki duplicate na ho
-    prov.event.clear();
-
-    for(DocumentSnapshot doc in snapshot.docs){
-      var Eventdata = doc.data() as Map<String,dynamic>;
-      prov.event.add(EventModel.fromMap(Eventdata));
-    }
-
-    prov.setevent(prov.event);
-  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getdata();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<EventProvider>(context, listen: false).getdata();
+    });
   }
-
   @override
   Widget build(BuildContext context) {
-
-
-
     final provider= Provider.of<IsAdding>(context);
     bool isadding = provider.isadding;
     return Scaffold(
@@ -77,18 +58,18 @@ class _EventScreenState extends State<EventScreen> {
                   EventModel event = value.event[index];
                   String dateString = event.date == null
                       ? 'No Date'
-                      : DateFormat.yMMMd().format(event.date!);
+                      : event.date.toString();
 
                   // Time
                   // TimeOfDay.format(context) is correct here for display
                   String timeString = event.time == null
                       ? 'No Time'
-                      : event.time!.format(context).toString();
+                      : event.time.toString();
 
                   return ListTile(
                     title: Text(event.Event.toString()),
                     // ✅ FIX: List item ki date aur time dikhayein
-                    subtitle: Text("| $timeString"),
+                    subtitle: Text("$dateString| $timeString"),
                   );
 
                 },
@@ -107,6 +88,7 @@ class _EventScreenState extends State<EventScreen> {
 }
 
 /// A stateful widget that manages its own edit/display state.
+/// ADD Event Screen and Manage date time
 class EventCard extends StatefulWidget {
   const EventCard({super.key});
 
@@ -157,8 +139,6 @@ class _EventCardState extends State<EventCard> {
     }
   }
 
-
-
   /// Shows the time picker dialog.
   Future<void> _pickTime(BuildContext context) async {
     final eventProvider =Provider.of<EventProvider>(context,listen: false);
@@ -170,8 +150,6 @@ class _EventCardState extends State<EventCard> {
       eventProvider.setTime(picked);
     }
   }
-
-
 
   void addEvent(EventModel event,BuildContext context)async{
      FirebaseFirestore db= FirebaseFirestore.instance;
@@ -189,9 +167,6 @@ class _EventCardState extends State<EventCard> {
          Utiles().toastMessage(e.toString());
        }
   }
-
-
-
   @override
   Widget build(BuildContext context) {
     return
@@ -259,38 +234,59 @@ class _EventCardState extends State<EventCard> {
               const Divider(),
               SizedBox(height: 8,),
 
-              ElevatedButton(onPressed: (){
-                // 2. Data collect karen
-                String eventTitle = _textController.text.trim();
-                DateTime? selectedDate = value.date;
-                TimeOfDay? selectedTime = value.time;
+              ElevatedButton(
+                onPressed: () {
+                  // 1. Data collect karen
+                  String eventTitle = _textController.text.trim();
 
+                  // Provider se DateTime aur TimeOfDay le rahe hain
+                  DateTime? selectedDate = value.date;
+                  TimeOfDay? selectedTime = value.time;
 
+                  // Check validation
+                  if (eventTitle.isEmpty || selectedDate == null || selectedTime == null) {
+                    Utiles().toastMessage("Please fill all details!");
+                    return;
+                  }
 
-                if (eventTitle.isEmpty || selectedDate == null || selectedTime == null) {
-                  Utiles().toastMessage("Please fill all details!");
-                  return;
-                }
+                  // 1. Current User ki ID nikalein
+                  User? user = FirebaseAuth.instance.currentUser;
 
-                EventModel newEvent = EventModel(
-                  eventTitle,
-                  selectedDate,
-                  selectedTime,
-                );
+                  if (user == null) {
+                    Utiles().toastMessage("User not logged in!");
+                    return;
+                  }
 
-                // 5. addEvent ko call karein (formatted time string ke saath)
-                // Ab addEvent ko do arguments chahiye: EventModel aur formattedTime
-                addEvent(newEvent,context);
+                  // 2. CONVERSION (Yahan magic hoga)
+                  // DateTime ko String banaya (e.g., "Nov 25, 2025")
+                  String formattedDate = DateFormat.yMMMd().format(selectedDate);
 
-                   //ye even screen ka logic ha
-                final provider= Provider.of<IsAdding>(context,listen: false);
-                provider.setisAdding(false);
+                  // TimeOfDay ko String banaya (e.g., "8:30 PM")
+                  String formattedTime = selectedTime.format(context);
 
-              },
+                  // 3. Model Create (Ab hum String pass kar rahe hain)
+                  EventModel newEvent = EventModel(
+                    eventTitle,
+                    formattedDate, // String
+                    formattedTime, // String
+                      userId:user.uid,
+                  );
 
-                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                  ),
-                  child:Text("Save",style: TextStyle(color: textColor,fontSize: 18),)),
+                  // 4. Save to Firebase
+                  addEvent(newEvent, context);
+
+                  // 5. Close screen / logic
+                  final provider = Provider.of<IsAdding>(context, listen: false);
+                  provider.setisAdding(false);
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                ),
+                child: Text(
+                  "Save",
+                  style: TextStyle(color: textColor, fontSize: 18),
+                ),
+              ),
             ],
           ),
         ),

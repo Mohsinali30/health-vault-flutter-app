@@ -1,3 +1,4 @@
+import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
@@ -190,7 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                        case 4:
                          Navigator.push(
                              context,
-                             MaterialPageRoute(builder: (context) =>  EventScreen())
+                             MaterialPageRoute(builder: (context) =>  EventScreen(),
+                             ),
                          ) ;
                          break;
                        case 5:
