@@ -23,9 +23,11 @@ class _EventScreenState extends State<EventScreen> {
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<EventProvider>(context, listen: false).getdata();
+    final prov=  Provider.of<EventProvider>(context, listen: false);
+    prov.getdata();
     });
   }
+
   @override
   Widget build(BuildContext context) {
     final provider= Provider.of<IsAdding>(context);
@@ -45,15 +47,12 @@ class _EventScreenState extends State<EventScreen> {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              // Here is the card widget
               child: isadding ?
               EventCard()
-                  :(value.event.isEmpty// Check if the global list is empty
-                  ? const Center(child: Text("No Appointment is Added")) // Show empty text
-                  : ListView.builder( // Show the list
+                  :(value.event.isEmpty
+                  ? const Center(child: Text("No Appointment is Added"))
+                  : ListView.builder(
                 itemCount: value.event.length,
-
-                // Use actual list length
                 itemBuilder: (context, index) {
                   EventModel event = value.event[index];
                   String dateString = event.date == null
@@ -70,6 +69,10 @@ class _EventScreenState extends State<EventScreen> {
                     title: Text(event.Event.toString()),
                     // ✅ FIX: List item ki date aur time dikhayein
                     subtitle: Text("$dateString| $timeString"),
+                    leading:Icon(Icons.access_time,color: primaryGreen,size: 28,),
+                    trailing: IconButton(onPressed: (){
+                      value.deleteEvent(event.docId.toString());
+                    }, icon: Icon(Icons.delete_outline_outlined,color: Colors.black,size: 28,)),
                   );
 
                 },
