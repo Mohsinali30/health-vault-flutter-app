@@ -5,7 +5,7 @@ import 'package:timezone/data/latest.dart' as tz;
 // ⚠️ IMPORTANT: Yeh function Class ke BAHAR hona chahiye (Top Level)
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
-  // Background mein notification par tap karne ka logic
+  // Background mein notification par tap karne ka logic k
   print('Background Notification Tapped: ${notificationResponse.payload}');
 }
 
