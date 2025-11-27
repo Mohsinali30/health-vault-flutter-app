@@ -1,12 +1,19 @@
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
+import 'package:firebase_practice/utiles/event_notification.dart';
 import 'package:firebase_practice/views/auth/splash_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timezone/data/latest_10y.dart';
 import 'View_view_Model/provider.dart';
 import 'firebase_options.dart';
+
+
+
 void main() async{
 WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -16,7 +23,8 @@ await Supabase.initialize(
   url: 'https://tsbzfoicjroilxbfaasw.supabase.co',
   anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzYnpmb2ljanJvaWx4YmZhYXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDkxMDQsImV4cCI6MjA3NjkyNTEwNH0.J5IYK0_pUJwaeAFP1WIQIDH3w1PvHxlfikTx_TEn5Z8',
 );
-
+//  Sirf ek line likhni hai init karne ke liye
+  await NotificationService().initNotification();
   runApp(const MyApp());
 }
 
