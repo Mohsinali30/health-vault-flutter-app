@@ -1,6 +1,7 @@
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
+import 'package:firebase_practice/views/Prescription/Precription_view.dart';
 import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
@@ -10,7 +11,6 @@ import '../../Supabase_services/bucketoperations.dart';
 import '../../View_view_Model/provider.dart';
 import '../../utiles/AppColors.dart';
 import '../../utiles/QuickActionButton.dart';
-import '../../utiles/RecentActivityCard.dart';
 import '../Upload_Docs/uploadScreen.dart' hide primaryGreen, lightGreen;
 
 
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Consumer<Loadingstate>(
           builder: (context, provider, child) {
             final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
-            final recentFiles = files.take(2).toList();
+            final recentFiles = files.take(4).toList();
             if (provider.isLoading && provider.allFiles.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -184,7 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
                          );
                          break;
                        case 2:
-                         print("Navigate to Prescriptions screen");
+                         Navigator.push(
+                           context,
+                           MaterialPageRoute(builder: (context) =>  PrecriptionView()),
+                         );
                          break;
                        case 3:
                          Navigator.push(
@@ -255,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.green.withOpacity(0.1), // Orange tint for "Recent" feel
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.history, color: Colors.green, size: 22),
+                          child: const Icon(Icons.file_copy_outlined, color: Colors.green, size: 22),
                         ),
 
                         // 2. TITLE: File Name
