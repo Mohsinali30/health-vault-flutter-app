@@ -117,56 +117,59 @@ class _ViewallfilesState extends State<Viewallfiles> {
                       color: Colors.white, // Clean white background
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6.0),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: GestureDetector(
+                          onTap:() => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
 
-                          // 1. LEADING ICON (File Icon with Green Background)
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: primaryGreen.withOpacity(0.1), // Light Green Circle
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.insert_drive_file_outlined, color: primaryGreen, size: 24),
-                          ),
-
-                          // 2. FILE NAME (Bold & Clean)
-                          title: Text(
-                            file.name ?? 'Unknown File',
-                            maxLines: 1, // Sirf 1 line taake layout na toote
-                            overflow: TextOverflow.ellipsis, // Lambe naam ke liye "..."
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                              color: textColor, // Aapka defined text color
-                            ),
-                          ),
-
-                          // 3. SUBTITLE (Optional - File Type text)
-                          subtitle: Text(
-                            "Document", // Aap yahan file size ya date bhi dikha sakte hain
-                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                          ),
-
-                          // 4. ACTIONS (Download & Delete Icons)
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min, // Zaroori hai taake overflow na ho
-                            children: [
-
-                              // --- DOWNLOAD BUTTON ---
-                              IconButton(
-                                tooltip: "Download",
-                                icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
-                                onPressed: () => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                            // 1. LEADING ICON (File Icon with Green Background)
+                            leading: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: primaryGreen.withOpacity(0.1), // Light Green Circle
+                                shape: BoxShape.circle,
                               ),
+                              child: Icon(Icons.insert_drive_file_outlined, color: primaryGreen, size: 24),
+                            ),
 
-                              // --- DELETE BUTTON ---
-                              IconButton(
-                                tooltip: "Delete",
-                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                onPressed: () => BucketOperation().DeleteFile('${provider.category}/${file.name}'),
+                            // 2. FILE NAME (Bold & Clean)
+                            title: Text(
+                              file.name ?? 'Unknown File',
+                              maxLines: 1, // Sirf 1 line taake layout na toote
+                              overflow: TextOverflow.ellipsis, // Lambe naam ke liye "..."
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                                color: textColor, // Aapka defined text color
                               ),
-                            ],
+                            ),
+
+                            // 3. SUBTITLE (Optional - File Type text)
+                            subtitle: Text(
+                              "Document", // Aap yahan file size ya date bhi dikha sakte hain
+                              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                            ),
+
+                            // 4. ACTIONS (Download & Delete Icons)
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min, // Zaroori hai taake overflow na ho
+                              children: [
+
+                                // --- DOWNLOAD BUTTON ---
+                                IconButton(
+                                  tooltip: "Download",
+                                  icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
+                                  onPressed: () => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                                ),
+
+                                // --- DELETE BUTTON ---
+                                IconButton(
+                                  tooltip: "Delete",
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                  onPressed: () => BucketOperation().DeleteFile('${provider.category}/${file.name}'),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
