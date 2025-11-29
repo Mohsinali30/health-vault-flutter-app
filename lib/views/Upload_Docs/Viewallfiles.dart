@@ -42,42 +42,44 @@ class _ViewallfilesState extends State<Viewallfiles> {
           final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
 
           // List ki lambai (length) ko use karein
-          return Column(children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: [
-                   CustomElevatedButton(text: 'Diagnostics (Lab Reports)', onPressed: (){
-                     provider.setcategory('diagnostics');
-                     provider.showFiles(context, provider.category);
-                   }),
-                    SizedBox(width: 12,),
-                    CustomElevatedButton(text: 'Medication / Prescriptions', onPressed: (){
-                      provider.setcategory('medication');
-                      provider.showFiles(context, provider.category);
-                    }),
-                    SizedBox(width: 12,),
-                    CustomElevatedButton(text: 'Visits / Consultations', onPressed: (){
-                      provider.setcategory('visits');
-                      provider.showFiles(context, provider.category);
-                    }),
-                    SizedBox(width: 12,),
-                    CustomElevatedButton(text: 'Surgeries / Procedures', onPressed: (){
-                      provider.setcategory('surgeries');
-                      provider.showFiles(context, provider.category);
-                    }),
-                    SizedBox(width: 12,),
-                    CustomElevatedButton(text: 'Vaccination Certificates', onPressed: (){
-                      provider.setcategory('vaccinations');
-                      provider.showFiles(context, provider.category);
-                    }
-                    ),
-                    SizedBox(width: 12,),
-                    CustomElevatedButton(text: 'Others', onPressed: (){
-                      provider.setcategory('other');
-                    provider.showFiles(context, provider.category);
-                    }),
-                  ],),
+          return
+            Column(children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Thodi padding di
+                physics: const BouncingScrollPhysics(), // Smooth scroll
+                child: Row(
+                  children: [
+                    // 1. Diagnostics
+                    _buildCategoryChip(context, provider, 'Diagnostics', 'diagnostics'),
+
+                    const SizedBox(width: 10),
+
+                    // 2. Medication
+                    _buildCategoryChip(context, provider, 'Medications', 'medication'),
+
+                    const SizedBox(width: 10),
+
+                    // 3. Visits
+                    _buildCategoryChip(context, provider, 'Consultations', 'visits'),
+
+                    const SizedBox(width: 10),
+
+                    // 4. Surgeries
+                    _buildCategoryChip(context, provider, 'Surgeries', 'surgeries'),
+
+                    const SizedBox(width: 10),
+
+                    // 5. Vaccinations
+                    _buildCategoryChip(context, provider, 'Vaccinations', 'vaccinations'),
+
+                    const SizedBox(width: 10),
+
+                    // 6. Others
+                    _buildCategoryChip(context, provider, 'Others', 'other'),
+                  ],
                 ),
+              ),
 
           Expanded(
             child:
@@ -96,86 +98,80 @@ class _ViewallfilesState extends State<Viewallfiles> {
                 :
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: ListView.builder(
+              child:
+              ListView.builder(
                 shrinkWrap: true,
-              itemCount: files.length,
+                itemCount: files.length,
+                physics: const NeverScrollableScrollPhysics(), // Agar parent scrollable hai to ye zaroori hai
                 itemBuilder: (context, index) {
                   final file = files[index];
-                  return
-                    Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      color: cardBackgroundColor, // Use the defined card background color
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Card(
+                      elevation: 4, // Shadow effect
+                      shadowColor: Colors.grey.withOpacity(0.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16), // Gol kinare
+                      ),
+                      color: Colors.white, // Clean white background
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Icon(Icons.drive_folder_upload_outlined, size: 28.0, color: primaryGreen),
-                                const SizedBox(width: 12.0),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(file.name ?? 'Unknown File',
-                                        style:  TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4.0),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+
+                          // 1. LEADING ICON (File Icon with Green Background)
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: primaryGreen.withOpacity(0.1), // Light Green Circle
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(height: 16.0),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Row(
-                                children: [
-                                  ElevatedButton(
-                                      onPressed:()=>BucketOperation().DeleteFile('${provider.category}/${file.name}'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryGreen, // Button background color
-                                        foregroundColor: Colors.white, // Button text color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                      ),
-                                      child: Icon(Icons.delete_outline_outlined ,size: 25,color: Colors.white,)
-                                  ),
+                            child: Icon(Icons.insert_drive_file_outlined, color: primaryGreen, size: 24),
+                          ),
 
-                                  SizedBox(width: 13,),
-                                  ElevatedButton(
-                                      onPressed:()=> BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryGreen, // Button background color
-                                        foregroundColor: Colors.white, // Button text color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                      ),
-                                      child: Icon(Icons.download_for_offline_outlined ,size: 25,color: Colors.white,)
-                                  ),
+                          // 2. FILE NAME (Bold & Clean)
+                          title: Text(
+                            file.name ?? 'Unknown File',
+                            maxLines: 1, // Sirf 1 line taake layout na toote
+                            overflow: TextOverflow.ellipsis, // Lambe naam ke liye "..."
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                              color: textColor, // Aapka defined text color
+                            ),
+                          ),
 
-                                ],
+                          // 3. SUBTITLE (Optional - File Type text)
+                          subtitle: Text(
+                            "Document", // Aap yahan file size ya date bhi dikha sakte hain
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
 
+                          // 4. ACTIONS (Download & Delete Icons)
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min, // Zaroori hai taake overflow na ho
+                            children: [
 
-
+                              // --- DOWNLOAD BUTTON ---
+                              IconButton(
+                                tooltip: "Download",
+                                icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
+                                onPressed: () => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
                               ),
-                            ),
-                          ],
+
+                              // --- DELETE BUTTON ---
+                              IconButton(
+                                tooltip: "Delete",
+                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                onPressed: () => BucketOperation().DeleteFile('${provider.category}/${file.name}'),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-
+                    ),
+                  );
                 },
               ),
             ),
@@ -192,7 +188,50 @@ class _ViewallfilesState extends State<Viewallfiles> {
 
   }
 
+// Helper Widget for Category Buttons
+  Widget _buildCategoryChip(BuildContext context, dynamic provider, String label, String categoryId) {
+    // Check: Kya ye button selected hai?
+    bool isSelected = provider.category == categoryId;
 
+    return InkWell(
+      onTap: () {
+        provider.setcategory(categoryId);
+        provider.showFiles(context, provider.category);
+      },
+      borderRadius: BorderRadius.circular(30), // Ripple effect gol ho
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          // Agar Select hai to Green, warna White
+          color: isSelected ? primaryGreen : Colors.white,
+          borderRadius: BorderRadius.circular(30), // Pill Shape
+          border: Border.all(
+            // Agar Select nahi hai to Grey border dikhaye
+            color: isSelected ? Colors.transparent : Colors.grey.shade300,
+          ),
+          boxShadow: isSelected
+              ? [
+            BoxShadow(
+              color: primaryGreen.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ]
+              : [], // Sirf active button ka shadow
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            // Agar Select hai to Text White, warna Grey
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
 
 
 }

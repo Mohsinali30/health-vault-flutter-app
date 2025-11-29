@@ -12,9 +12,11 @@ import '../models/eventModel.dart';
 class EventProvider with ChangeNotifier{
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  bool _isreminder= false;
   bool _isEditing = true; // Start in edit mode by default
   List<EventModel> _event=[];
 
+   bool get  isreminder => _isreminder;
   DateTime? get date => _selectedDate;
   TimeOfDay? get time => _selectedTime;
    bool get isEditing => _isEditing;
@@ -63,6 +65,11 @@ class EventProvider with ChangeNotifier{
      notifyListeners();
    }
 
+  void set_isreminder(bool isreminder){
+    _isreminder=isreminder;
+    notifyListeners();
+  }
+
   void setDate( DateTime selectedDate){
     _selectedDate=selectedDate;
     notifyListeners();
@@ -72,6 +79,7 @@ class EventProvider with ChangeNotifier{
     _selectedTime=selectedTime;
     notifyListeners();
   }
+
 
 
 }

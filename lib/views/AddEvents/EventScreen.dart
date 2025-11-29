@@ -7,7 +7,9 @@ import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart'; // Import for date formatting
+import 'package:provider/provider.dart';
+
+import '../../utiles/event_notification.dart'; // Import for date formatting
 
 
 ///Event Display Screen
@@ -32,7 +34,9 @@ class _EventScreenState extends State<EventScreen> {
   Widget build(BuildContext context) {
     final provider= Provider.of<IsAdding>(context);
     bool isadding = provider.isadding;
-    return Scaffold(
+    NotificationService NS= NotificationService();
+    return
+      Scaffold(
       appBar: AppBar(
         title: const Text('Add Appointment'),
         actions: [GestureDetector(
@@ -65,14 +69,147 @@ class _EventScreenState extends State<EventScreen> {
                       ? 'No Time'
                       : event.time.toString();
 
-                  return ListTile(
-                    title: Text(event.Event.toString()),
-                    // ✅ FIX: List item ki date aur time dikhayein
-                    subtitle: Text("$dateString| $timeString"),
-                    leading:Icon(Icons.access_time,color: primaryGreen,size: 28,),
-                    trailing: IconButton(onPressed: (){
-                      value.deleteEvent(event.docId.toString());
-                    }, icon: Icon(Icons.delete_outline_outlined,color: Colors.black,size: 28,)),
+                  return
+                   Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    child: Card(
+                      elevation: 4, // Halka sa shadow
+                      shadowColor: Colors.grey.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16), // Gol kinare
+                      ),
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+
+                          // 1. LEADING ICON (Green Circle Background)
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: primaryGreen.withOpacity(0.1), // Halka green background
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.access_time_filled, color: primaryGreen, size: 24),
+                          ),
+
+                          // 2. TITLE (Bold Text)
+                          title: Text(
+                            event.Event.toString(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+
+                          // 3. SUBTITLE (Date & Time with Icon)
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey[600]),
+                                const SizedBox(width: 4),
+
+                                Expanded(
+                                  child: Text(
+                                    "$dateString | $timeString",
+                                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                    overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
+                                    maxLines: 1, // Sirf 1 line mein rakhe ga
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // 4. TRAILING (Action Buttons Row)
+                          trailing: SizedBox(
+                            width:100 ,
+                            child: Row(
+                             mainAxisAlignment: MainAxisAlignment.end, // Zaroori hai
+                              children: [
+
+                                // --- NOTIFICATION BUTTON (With Logic) ---
+                                IconButton(
+                                  tooltip: "Set Reminder",
+                                  icon: const Icon(Icons.notifications_active_outlined, color: Colors.blueAccent),
+                                  onPressed: () async {
+                                    try {
+                                      // 1. Date Parse
+                                      DateTime datePart = DateFormat.yMMMd().parse(event.date!);
+                                      DateTime now = DateTime.now();
+
+                                      // 2. Default Time (00:00 Midnight)
+                                      DateTime fullScheduledTime = DateTime(
+                                        datePart.year,
+                                        datePart.month,
+                                        datePart.day,
+                                        0,
+                                        0,
+                                      );
+
+                                      // 3. Logic Check (Past Time)
+                                      if (fullScheduledTime.isBefore(now)) {
+                                        // Check: Kya ye "Aaj" ka din hai?
+                                        if (datePart.year == now.year &&
+                                            datePart.month == now.month &&
+                                            datePart.day == now.day) {
+
+                                          // Agar AJJ ka din hai, to Abhi + 1 minute set karo
+                                          fullScheduledTime = now.add(const Duration(minutes: 1));
+                                          Utiles().toastMessage("Event is today! Reminder set for 1 min later.");
+                                        } else {
+                                          // Agar Kal (Yesterday) tha
+                                          Utiles().toastMessage("Cannot set reminder for past dates!");
+                                          return;
+                                        }
+                                      }
+
+                                      // 4. Schedule Notification
+                                      // IMPORTANT: 'event.docId' ko string mein convert karke pass karein
+                                      // Notification Service khud usay .hashCode mein badal legi (agar updated hai)
+                                      NS.scheduleNotification(
+                                        id: event.docId.toString(),
+                                        title: "Appointment Reminder",
+                                        body: "Don't forget Today : ${event.Event}",
+                                        scheduledTime: fullScheduledTime,
+                                      );
+
+                                      Utiles().toastMessage("Reminder Set Successfully!");
+
+                                      // 5. Update Database (Flag True karein)
+                                      // Spelling check kar lena: 'isreminder' ya 'isReminderActive'
+                                      await FirebaseFirestore.instance
+                                          .collection("Events")
+                                          .doc(event.docId)
+                                          .update({"isreminder": true});
+
+                                    } catch (e) {
+                                      print("Error: $e");
+                                      Utiles().toastMessage("Error setting reminder: ${e.toString()}");
+                                    }
+                                  },
+                                ),
+
+                                // --- DELETE BUTTON ---
+                                IconButton(
+                                  tooltip: "Delete",
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                  onPressed: () {
+                                    if (event.docId != null) {
+                                      // Confirm Dialog lagana acha hota hai, lekin direct delete bhi theek hai
+                                      value.deleteEvent(event.docId.toString());
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   );
 
                 },
@@ -83,9 +220,6 @@ class _EventScreenState extends State<EventScreen> {
           );
 
       }));
-
-
-
 
   }
 }
@@ -134,7 +268,7 @@ class _EventCardState extends State<EventCard> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: eventProvider.date ?? DateTime.now(),
-      firstDate: DateTime(DateTime.now().day),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != eventProvider.date) {
@@ -149,7 +283,35 @@ class _EventCardState extends State<EventCard> {
       context: context,
       initialTime: eventProvider.time ?? TimeOfDay.now(),
     );
+
+
     if (picked != null && picked != eventProvider.time) {
+
+      // Provider se selected date lein (agar null hai to aaj ki maan lein)
+      DateTime selectedDate = eventProvider.date ?? DateTime.now();
+      DateTime now = DateTime.now();
+
+      // Check karein ke kya user ne 'Aaj' ki date select ki hai?
+      bool isToday = selectedDate.year == now.year &&
+          selectedDate.month == now.month &&
+          selectedDate.day == now.day;
+
+      if (isToday) {
+        // Agar aaj ki date hai, to check karein ke time guzra hua to nahi?
+        // Logic: Agar Picked Hour abhi ke Hour se chota hai,
+        // YA Hour same hai lekin Minute chota hai.
+        if (picked.hour < now.hour ||
+            (picked.hour == now.hour && picked.minute < now.minute)) {
+
+          // User ko error dikhayen
+          Utiles().toastMessage("You cannot select a past time!");
+          return; // Function yahin rok dein, time set na karein
+        }
+      }
+
+
+
+
       eventProvider.setTime(picked);
     }
   }
@@ -170,12 +332,15 @@ class _EventCardState extends State<EventCard> {
          Utiles().toastMessage(e.toString());
        }
   }
+
   @override
   Widget build(BuildContext context) {
     return
       Consumer<EventProvider>(builder: (context,value,child){
+
       bool isEditing= value.isEditing;
-      return Card(
+      return
+        Card(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -245,7 +410,6 @@ class _EventCardState extends State<EventCard> {
                   // Provider se DateTime aur TimeOfDay le rahe hain
                   DateTime? selectedDate = value.date;
                   TimeOfDay? selectedTime = value.time;
-
                   // Check validation
                   if (eventTitle.isEmpty || selectedDate == null || selectedTime == null) {
                     Utiles().toastMessage("Please fill all details!");
@@ -269,9 +433,10 @@ class _EventCardState extends State<EventCard> {
 
                   // 3. Model Create (Ab hum String pass kar rahe hain)
                   EventModel newEvent = EventModel(
-                    eventTitle,
-                    formattedDate, // String
-                    formattedTime, // String
+                    isreminder:false,
+                    Event:eventTitle,
+                    date:formattedDate, // String
+                    time :formattedTime, // String
                       userId:user.uid,
                   );
 

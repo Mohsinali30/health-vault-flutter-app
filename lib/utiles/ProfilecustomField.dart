@@ -6,15 +6,16 @@ import 'AppColors.dart';
 class ProfileCustomField extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String initialValue;
   final bool readOnly;
+  final  TextEditingController controll;
 
-  const ProfileCustomField({
+   ProfileCustomField({
     Key? key,
     required this.icon,
     required this.label,
-    required this.initialValue,
-    this.readOnly = true, // By default, profile fields are read-only
+    this.readOnly = false,
+    required this.controll,
+    // By default, profile fields are read-only
   }) : super(key: key);
 
   @override
@@ -23,7 +24,7 @@ class ProfileCustomField extends StatelessWidget {
       // Padding is managed by the parent, but a slight vertical margin is fine
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        initialValue: initialValue,
+        controller: controll,
         readOnly: readOnly,
         style: const TextStyle(
           color: Colors.black87,

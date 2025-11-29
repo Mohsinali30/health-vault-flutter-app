@@ -1,6 +1,7 @@
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
+import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
@@ -186,7 +187,10 @@ class _HomeScreenState extends State<HomeScreen> {
                          print("Navigate to Prescriptions screen");
                          break;
                        case 3:
-                         print("Navigate to Reminders screen");
+                         Navigator.push(
+                             context,
+                             MaterialPageRoute(builder: (context) =>  ReminderView()),
+                         );
                          break;
                        case 4:
                          Navigator.push(
@@ -224,22 +228,91 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             ListView.builder(
-                shrinkWrap: true,
-            itemCount:recentFiles.length,
-            itemBuilder: (context, index) {
-            final file = recentFiles[index];
-            return RecentActivityCard(
-            icon: Icons.drive_file_move_outline,
-            title:'${file.name}',
-            subtitle: '',
-            onViewDetails:()=>BucketOperation().DownloadAndOpen(file.name),
-            buttonicon: 'view',
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: recentFiles.length,
+              itemBuilder: (context, index) {
+                final file = recentFiles[index];
 
-            );
-            }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                  child: Card(
+                    elevation: 3, // Halka shadow
+                    shadowColor: Colors.grey.withOpacity(0.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Soft corners
+                    ),
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0), // Inner spacing
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
 
-       // Spacing at the bottom
-            )]
+                        // 1. LEADING: File Icon with Background
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1), // Orange tint for "Recent" feel
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.history, color: Colors.green, size: 22),
+                        ),
+
+                        // 2. TITLE: File Name
+                        title: Text(
+                          file.name ?? 'Unknown File',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: textColor, // Aapka defined color
+                          ),
+                        ),
+
+                        // 3. SUBTITLE: "Recently Viewed" text
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            "Recently Added", // Khali subtitle ki jagah ye behtar hai
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
+                        ),
+
+                        // 4. TRAILING: View Button
+                        trailing: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () => BucketOperation().DownloadAndOpen(file.name),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: primaryGreen.withOpacity(0.1), // Green pill background
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: primaryGreen.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "View",
+                                  style: TextStyle(
+                                    color: primaryGreen,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(Icons.arrow_forward_ios_rounded, size: 10, color: primaryGreen),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),]
             ),
 
     );})

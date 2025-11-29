@@ -42,22 +42,25 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-
       // Jab app khuli ho aur user tap kare
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         print("Foreground Tap: ${response.payload}");
         // Yahan aap Navigator use kar sakte hain
       },
-
       // Jab app band ho aur user tap kare (Wo upar wala function pass karein)
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+
   }
 
   // 2. Simple Notification
-  Future<void> showNotification({required int id, required String title, required String body}) async {
+  Future<void> showNotification({required String id, required String title, required String body}) async {
     await flutterLocalNotificationsPlugin.show(
-      id,
+      id.hashCode,
       title,
       body,
       const NotificationDetails(
@@ -73,13 +76,13 @@ class NotificationService {
 
   // 3. Scheduled Notification (Date & Time ke saath)
   Future<void> scheduleNotification({
-    required int id,
+    required String id,
     required String title,
     required String body,
     required DateTime scheduledTime,
   }) async {
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
+      id.hashCode,
       title,
       body,
       tz.TZDateTime.from(scheduledTime, tz.local), // Time conversion

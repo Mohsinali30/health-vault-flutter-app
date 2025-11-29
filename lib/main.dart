@@ -1,4 +1,5 @@
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
+import 'package:firebase_practice/View_view_Model/bioProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/utiles/event_notification.dart';
 import 'package:firebase_practice/views/auth/splash_screen.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_)=> Loadingstate()),
       ChangeNotifierProvider(create: (_)=> EventProvider()),
       ChangeNotifierProvider(create: (_)=> IsAdding()),
+      ChangeNotifierProvider(create: (_)=> BioProvider()),
     ],
         child: Builder(builder: (BuildContext context) {
           return MaterialApp
