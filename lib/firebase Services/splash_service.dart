@@ -15,10 +15,11 @@ class SplashService{
     final user = auth.currentUser;
 
     if(user != null){
-      Timer(Duration(seconds: 3), ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen())));
+      Timer(Duration(seconds: 3), ()=> Navigator.pushNamed(context, 'home'));
     }
     else{
-      Timer(Duration(seconds: 3), ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen())));
+      Timer(Duration(seconds: 3), ()=>
+          Navigator.pushNamed(context, 'Login'));
 
     }
 

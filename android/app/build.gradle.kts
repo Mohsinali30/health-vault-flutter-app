@@ -56,3 +56,10 @@ dependencies {
     // Flutter aur 'kotlin-android' plugin ab isay khud handle karte hain.
     // Wo line rakhne se aksar variable errors aate hain.
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.10.1")
+        force("androidx.activity:activity-ktx:1.10.1")
+    }
+}

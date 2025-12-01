@@ -1,8 +1,20 @@
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
+import 'package:firebase_practice/View_view_Model/PrecripProvider.dart';
 import 'package:firebase_practice/View_view_Model/bioProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
+import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/utiles/event_notification.dart';
+import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
+import 'package:firebase_practice/views/HomeScreen/homescreen.dart';
+import 'package:firebase_practice/views/Prescription/ImageViewScreen.dart';
+import 'package:firebase_practice/views/Prescription/Precription_view.dart';
+import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
+import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
+import 'package:firebase_practice/views/Upload_Docs/uploadScreen.dart';
+import 'package:firebase_practice/views/auth/SignUp_Screen.dart';
+import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:firebase_practice/views/auth/splash_screen.dart';
+import 'package:firebase_practice/views/profile_Screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,7 +33,7 @@ WidgetsFlutterBinding.ensureInitialized();
     options: DefaultFirebaseOptions.currentPlatform,
   );
 await Supabase.initialize(
-  url: 'https://tsbzfoicjroilxbfaasw.supabase.co',
+    url: 'https://tsbzfoicjroilxbfaasw.supabase.co',
   anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzYnpmb2ljanJvaWx4YmZhYXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDkxMDQsImV4cCI6MjA3NjkyNTEwNH0.J5IYK0_pUJwaeAFP1WIQIDH3w1PvHxlfikTx_TEn5Z8',
 );
 //  Sirf ek line likhni hai init karne ke liye
@@ -40,6 +52,7 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_)=> EventProvider()),
       ChangeNotifierProvider(create: (_)=> IsAdding()),
       ChangeNotifierProvider(create: (_)=> BioProvider()),
+      ChangeNotifierProvider(create: (_)=> PrecripProvider()),
     ],
         child: Builder(builder: (BuildContext context) {
           return MaterialApp
@@ -48,7 +61,29 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             ),
-            home: SplashScreen(),
+            initialRoute: 'SplashScreen',
+            routes: {
+              'SplashScreen': (context) =>  SplashScreen(),
+              'Login': (context) =>  LoginScreen(),
+              'Signup':(context) => SignUpScreen(),
+              'home': (context) =>  HomeScreen(),
+              'UploadScreen': (context) =>  UploadScreen(),
+              'AllFile': (context) =>  Viewallfiles(),
+              'ReminderView': (context) => ReminderView(),
+              'Precription': (context) =>  PrecriptionView(),
+              'AddEvent': (context) =>  EventScreen(),
+              'UserProfile': (context) =>  MyProfileScreen(),
+              'TipsView': (context) =>  ShowTipsScreen(),
+
+
+
+
+
+
+
+
+
+            }
           );
         }
     ),);

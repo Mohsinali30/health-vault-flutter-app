@@ -66,7 +66,8 @@ class _ReminderViewState extends State<ReminderView> {
                       ),
 
                       // Title: Bold Text
-                      title: Text(
+                      title:
+                      Text(
                         event.Event,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,

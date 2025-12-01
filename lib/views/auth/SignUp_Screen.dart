@@ -41,7 +41,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Validation succeeded
       auth.createUserWithEmailAndPassword(email: emailController.text.toString(),
           password: password.text.toString()).then((value){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+        Navigator.pushNamed(context, 'Login');
         loadingprovider.setloading(false);
       }
       ).onError((error,stackTrace){
@@ -168,8 +168,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontWeight: FontWeight.w600,
               )),
                   TextButton(onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginScreen()));
-                  }, child:
+                    Navigator.pushNamed(context, 'Login');
+                    }, child:
                   Text("Login ",style: TextStyle(
                     color: whiteColor,
                     fontSize: 12.0,

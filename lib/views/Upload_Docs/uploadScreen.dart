@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/Supabase_services/bucketoperations.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -115,12 +116,19 @@ class _UploadScreenState extends State<UploadScreen> {
   void _startUpload() async
   {
     final provider = Provider.of<Loadingstate>(context, listen: false);
+    // 1. Get Current User ID
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Utiles().toastMessage("User not logged in. Cannot upload.");
+      return;
+    }
+   final uid =user.uid;
     if (_selectedCategory == null) {
       Utiles().toastMessage("Please select a file category.");
       return;
     }
 
-    // ✅ CORRECT WAY: Value is accessed and used inside the function body
+    //  CORRECT WAY: Value is accessed and used inside the function body
     final HealthCategory category = _selectedCategory!;
     final String folderName = category.name;
 
@@ -129,7 +137,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     final String file = fileToUpload!.path;
     final fileName = fileToUpload.path.split('/').last;
-    final String filpathname = '$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
+    final String filpathname = '$uid/$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
     if (fileToUpload == null) {
       //here ican callback to fetchallfiles function for auto update in instate fun
       provider.showFiles(context, provider.category);
@@ -157,10 +165,10 @@ class _UploadScreenState extends State<UploadScreen> {
 
     } on StorageException catch (e) {
       // Catch Supabase-specific storage errors (e.g., policy violations)
-      Utiles().toastMessage("Storage Error: ${e.message}");
+      Utiles().toastMessage("Storage Error:");
     } catch (e) {
       // Catch general file system or network errors
-      Utiles().toastMessage("Upload failed: ${e.toString()}");
+      Utiles().toastMessage("Upload failed:");
     } finally {
       // 5. Stop Loading
       provider.setloading(false);

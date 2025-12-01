@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.w600,
                   )),
                   TextButton(onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> SignUpScreen()));
+                    Navigator.pushNamed(context, 'Signup');
                   }, child: Text("Sign Up",style: TextStyle(
                     color: whiteColor,
                     fontSize: 12.0,

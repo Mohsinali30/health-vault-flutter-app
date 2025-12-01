@@ -1,4 +1,4 @@
-import 'package:firebase_practice/View_view_Model/eventProvider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
 import 'package:firebase_practice/views/Prescription/Precription_view.dart';
@@ -7,6 +7,7 @@ import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../../Supabase_services/bucketoperations.dart';
 import '../../View_view_Model/provider.dart';
 import '../../utiles/AppColors.dart';
@@ -27,11 +28,26 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    saveDataToSupabase();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<Loadingstate>(context, listen: false);
       // Assuming 'fetchallFiles' is now correctly moved to your provider class (as advised previously)
       provider.showFiles(context, provider.category);
     });
+  }
+
+  Future<void> saveDataToSupabase() async {
+    // 1. Get the Current User from Firebase
+    final User? firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) {
+      print("User not logged in via Firebase");
+      return;
+    }
+
+    final String uid = firebaseUser.uid;
+
+    await Supabase.instance.client.from('Users').insert({'id': uid, 'created_at': DateTime.now().toIso8601String()});
+
   }
 
   @override
@@ -54,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           tooltip: 'Profile Setting',
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context)=> MyProfileScreen()));
+            Navigator.pushNamed(context, 'UserProfile');
           },
         ),
       ),
@@ -67,7 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer<Loadingstate>(
           builder: (context, provider, child) {
-            final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
+            final files = provider.allFiles
+                .where((files) => !files.name.contains('.emptyFolderPlaceholder'))
+                .toList();
             final recentFiles = files.take(4).toList();
             if (provider.isLoading && provider.allFiles.isEmpty) {
               return const Center(child: CircularProgressIndicator());
@@ -172,41 +190,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                      switch(index){
                        case 0:
-                         Navigator.push(
-                             context,
-                             MaterialPageRoute(builder: (context) => const UploadScreen())
-                         );
+                         Navigator.pushNamed(context, 'UploadScreen');
                          break;
                        case 1:
-                         Navigator.push(
-                             context,
-                             MaterialPageRoute(builder: (context) =>  Viewallfiles())
-                         );
+                         Navigator.pushNamed(context, 'AllFile');
                          break;
                        case 2:
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(builder: (context) =>  PrecriptionView()),
-                         );
+                         Navigator.pushNamed(context, 'Precription');
                          break;
                        case 3:
-                         Navigator.push(
-                             context,
-                             MaterialPageRoute(builder: (context) =>  ReminderView()),
-                         );
+                         Navigator.pushNamed(context, 'ReminderView');
                          break;
                        case 4:
-                         Navigator.push(
-                             context,
-                             MaterialPageRoute(builder: (context) =>  EventScreen(),
-                             ),
-                         ) ;
+                         Navigator.pushNamed(context, 'AddEvent');
                          break;
                        case 5:
-                         Navigator.push(
-                             context,
-                             MaterialPageRoute(builder: (context) =>  ShowTipsScreen())
-                         ) ;
+                         Navigator.pushNamed(context, 'TipsView');
                          break;
                        default:
                          print('${quickActions[index]['label']} tapped!');
@@ -235,7 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: recentFiles.length,
               itemBuilder: (context, index) {
-                final file = recentFiles[index];
+                //Reverse List Logic WooHhooooo
+                final reverselist = recentFiles.length -1-index;
+                final file = recentFiles[reverselist];
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),

@@ -82,6 +82,17 @@ class ShowTipsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSkipButton() {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: primaryGreen.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(50.0),
+      ),
+      child: Text("skip",style: TextStyle(color:primaryGreen.withOpacity(0.7)),)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,10 +104,13 @@ class ShowTipsScreen extends StatelessWidget {
         // 2. Custom Navigation Widgets (Next/Back/Done)
         showNextButton: true,
         showBackButton: true,
-        showDoneButton: true, // You generally need a 'Done' button on the last page
+        showDoneButton: true,
+        showSkipButton: true,
+        // You generally need a 'Done' button on the last page
 
         next: _buildNextButton(),
         back: _buildBackButton(),
+        skip: _buildSkipButton(),
         done: Text(
             "Let's Go!",
             style: TextStyle(fontWeight: FontWeight.bold, color: primaryGreen, fontSize: 18)

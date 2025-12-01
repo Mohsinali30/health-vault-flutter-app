@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../Supabase_services/bucketoperations.dart';
-import '../../utiles/CustomElevatedButton.dart';
 
 class Viewallfiles extends StatefulWidget {
 
@@ -39,8 +38,9 @@ class _ViewallfilesState extends State<Viewallfiles> {
       ),
       body: Consumer<Loadingstate>(
         builder: (context, provider, child) {
-          final files = provider.allFiles; // 💡 List Yahan Se Mil Jayegi 💡
-
+          final files = provider.allFiles
+              .where((files) => !files.name.contains('.emptyFolderPlaceholder'))
+              .toList();
           // List ki lambai (length) ko use karein
           return
             Column(children: [
@@ -102,7 +102,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: files.length,
-                physics: const NeverScrollableScrollPhysics(), // Agar parent scrollable hai to ye zaroori hai
+                physics: const BouncingScrollPhysics(), // Agar parent scrollable hai to ye zaroori hai
                 itemBuilder: (context, index) {
                   final file = files[index];
 

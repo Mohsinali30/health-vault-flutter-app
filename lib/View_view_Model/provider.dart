@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utiles/Utiles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Loadingstate with ChangeNotifier{
   final supaBaseRef = Supabase.instance.client;
@@ -35,18 +36,38 @@ notifyListeners();
 
 
 
-  Future<void>  showFiles(context,categoryFolder)async{
-    final provider= Provider.of<Loadingstate>(context,listen: false);
+
+  Future<void> showFiles(BuildContext context, String categoryFolder) async {
+    final provider = Provider.of<Loadingstate>(context, listen: false);
+
+    // 1. Get Current User ID
+    final String? uid = FirebaseAuth.instance.currentUser?.uid;
+
+    // Safety Check: If no user is logged in, stop here
+    if (uid == null) {
+      Utiles().toastMessage("User not logged in.");
+      return;
+    }
+
     provider.setloading(true);
 
-    try{
-      final List<FileObject> responsefile = await supaBaseRef.storage.from("files").list(path: categoryFolder);
+    try {
+      // 2. Construct the User-Specific Path
+      // Logic: Look inside the folder named after the UID, then the category
+      final String userSpecificPath = '$uid/$categoryFolder';
+
+      // 3. Fetch list from that path
+      final List<FileObject> responsefile = await supaBaseRef.storage
+          .from("files")
+          .list(path: userSpecificPath);
 
       provider.setAllFiles(responsefile);
-    }catch(e){
-      Utiles().toastMessage(e.toString());
+
+    } catch (e) {
+      Utiles().toastMessage("Storage Issue${e.toString()}");
+    } finally {
+      provider.setloading(false);
     }
-    provider.setloading(false);
   }
 
 }
