@@ -155,7 +155,7 @@ class _UploadScreenState extends State<UploadScreen> {
       await supaBaseRef.storage.from('files').upload(filpathname, fileToUpload);
 
       if (mounted) {
-        Utiles().toastMessage('File Upload Successful!  ${filpathname.toString()}');
+        Utiles().toastMessage('File Upload Successful!}');
         provider.showFiles(context, provider.category);
         setState(() {
           _selectedFile = null; // Clear file selection

@@ -211,8 +211,12 @@ class _PrecriptionViewState extends State<PrecriptionView> {
               .getPublicUrl('$uid/receipts/${file.name}');
 
           return GestureDetector(
+
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>ImageViewScreen(imageUrl: imageUrl, fileName: file.name) ));
+              final uid = FirebaseAuth.instance.currentUser?.uid;
+              if(uid == null) return;
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>ImageViewScreen(
+                  imageUrl: imageUrl, fileName: file.name,uid: uid,) ));
             },
             child: Container(
               decoration: BoxDecoration(

@@ -51,6 +51,8 @@ dependencies:
   flutter_local_notifications: ^19.5.0
   timezone: ^0.10.1
   image_picker: ^1.2.1
+  dio: ^5.3.3               # Image internet se download karne ke liye
+  gal: ^2.3.0
 
 dev_dependencies:
   flutter_test:
