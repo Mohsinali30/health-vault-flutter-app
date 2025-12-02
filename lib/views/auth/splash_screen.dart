@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../utiles/AppColors.dart';
 
 class SplashScreen extends StatefulWidget {
-   SplashScreen({super.key});
+   const SplashScreen({super.key});
 
 
   @override

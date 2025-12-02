@@ -9,12 +9,12 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.icon,
     required this.hintText,
     this.isPassword = false,
     required this.controller,
-  }) : super(key: key);
+  });
 
   // NOTE: The GlobalKey should typically be managed by the parent screen,
   // not the reusable field widget itself. We'll remove it for simplicity.

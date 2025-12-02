@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utiles/Utiles.dart';
+import '../views/Prescription/ImageViewScreen.dart';
 
 class PrecripProvider with ChangeNotifier {
   File? _image;
@@ -71,12 +71,8 @@ class PrecripProvider with ChangeNotifier {
 
   Future<void>  showFiles(context)async{
     setLoading(true);
-    final uid = await FirebaseAuth.instance.currentUser!.uid;
-    if(uid==null){
-      Utiles().toastMessage("User is not logged In ");
-      return;
-    }
-    final supaBaseRef= await Supabase.instance.client;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final supaBaseRef= Supabase.instance.client;
 
     try{
       final List<FileObject> responsefile = await supaBaseRef.storage.
@@ -89,5 +85,10 @@ class PrecripProvider with ChangeNotifier {
     setLoading(false);
   }
 
+
+
+
+
 }
+
 

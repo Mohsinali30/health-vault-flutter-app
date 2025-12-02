@@ -7,7 +7,7 @@ import '../../Supabase_services/bucketoperations.dart';
 
 class Viewallfiles extends StatefulWidget {
 
-   Viewallfiles();
+   const Viewallfiles({super.key});
 
   @override
   State<Viewallfiles> createState() => _ViewallfilesState();
@@ -86,7 +86,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
             files.isEmpty
                 ? Center(
               child: Text(
-                '📁 No files uploaded yet in "${provider.category}" folder.',
+                ' No files uploaded yet in "${provider.category}" folder.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,

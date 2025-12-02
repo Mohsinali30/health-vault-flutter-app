@@ -6,22 +6,20 @@ import 'package:firebase_practice/tips_Screen.dart';
 import 'package:firebase_practice/utiles/event_notification.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
 import 'package:firebase_practice/views/HomeScreen/homescreen.dart';
-import 'package:firebase_practice/views/Prescription/ImageViewScreen.dart';
 import 'package:firebase_practice/views/Prescription/Precription_view.dart';
 import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/Upload_Docs/uploadScreen.dart';
 import 'package:firebase_practice/views/auth/SignUp_Screen.dart';
+import 'package:firebase_practice/views/auth/forgotPasswordScreen.dart';
 import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:firebase_practice/views/auth/splash_screen.dart';
 import 'package:firebase_practice/views/profile_Screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:timezone/data/latest_10y.dart';
 import 'View_view_Model/provider.dart';
 import 'firebase_options.dart';
 
@@ -74,6 +72,7 @@ class MyApp extends StatelessWidget {
               'AddEvent': (context) =>  EventScreen(),
               'UserProfile': (context) =>  MyProfileScreen(),
               'TipsView': (context) =>  ShowTipsScreen(),
+              'ForgotScreen': (context)=> Forgotpasswordscreen(),
 
 
 

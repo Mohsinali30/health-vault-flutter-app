@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/eventModel.dart';
@@ -28,7 +27,7 @@ class EventProvider with ChangeNotifier{
 
     if (uid == null) return;
 
-    _eventSubscription = await FirebaseFirestore.instance
+    _eventSubscription = FirebaseFirestore.instance
         .collection("Events")
         .where('userId', isEqualTo: uid) // ✅ Sirf is user ka data layega
         .snapshots().listen((snapshot){

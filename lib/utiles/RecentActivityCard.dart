@@ -10,14 +10,14 @@ class RecentActivityCard extends StatelessWidget {
   final VoidCallback onViewDetails;
   final String  buttonicon;
 
-   RecentActivityCard({
-    Key? key,
+   const RecentActivityCard({
+    super.key,
     required this.icon,
     required this.title,
      this.subtitle='',
     required this.onViewDetails,
     required this.buttonicon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class RecentActivityCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                       "$title",
+                       title,
                         style: const TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class RecentActivityCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                 ),
                 child:  Text(
-                  "$buttonicon",
+                  buttonicon,
                   style: const TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,

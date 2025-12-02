@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_practice/Supabase_services/bucketoperations.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
@@ -138,13 +136,6 @@ class _UploadScreenState extends State<UploadScreen> {
     final String file = fileToUpload!.path;
     final fileName = fileToUpload.path.split('/').last;
     final String filpathname = '$uid/$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
-    if (fileToUpload == null) {
-      //here ican callback to fetchallfiles function for auto update in instate fun
-      provider.showFiles(context, provider.category);
-      provider.setloading(false);
-      Utiles().toastMessage("Error: File path is not accessible.");
-      return;
-    }
 
     // Create a unique file path within the bucket
     // Format: category/filename_timestamp.ext
@@ -163,7 +154,7 @@ class _UploadScreenState extends State<UploadScreen> {
         });
       }
 
-    } on StorageException catch (e) {
+    } on StorageException {
       // Catch Supabase-specific storage errors (e.g., policy violations)
       Utiles().toastMessage("Storage Error:");
     } catch (e) {
@@ -234,7 +225,7 @@ class _UploadScreenState extends State<UploadScreen> {
       ),
       body: Consumer<Loadingstate>(
           builder: (context, value, child) {
-            bool _isLoading = value.isLoading; // Read the state correctly
+            bool isLoading = value.isLoading; // Read the state correctly
 
             return SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -275,7 +266,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
               // Select File Button
               ElevatedButton.icon(
-                onPressed: _isLoading ? null : _pickFile,
+                onPressed: isLoading ? null : _pickFile,
                 icon: const Icon(Icons.folder_open),
                 label: Text(_selectedFile == null ? 'Select File' : 'Change File'),
                 style: ElevatedButton.styleFrom(
@@ -294,7 +285,7 @@ class _UploadScreenState extends State<UploadScreen> {
               const SizedBox(height: 40),
 
               // Upload Button (Conditional)
-              if (_isLoading)
+              if (isLoading)
                 const Center(
                   child: Column(
                     children: [

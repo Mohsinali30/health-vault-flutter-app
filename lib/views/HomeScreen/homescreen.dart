@@ -1,10 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_practice/tips_Screen.dart';
-import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
-import 'package:firebase_practice/views/Prescription/Precription_view.dart';
-import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
-import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
-import 'package:firebase_practice/views/profile_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
@@ -12,11 +6,10 @@ import '../../Supabase_services/bucketoperations.dart';
 import '../../View_view_Model/provider.dart';
 import '../../utiles/AppColors.dart';
 import '../../utiles/QuickActionButton.dart';
-import '../Upload_Docs/uploadScreen.dart' hide primaryGreen, lightGreen;
 
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
 
   @override

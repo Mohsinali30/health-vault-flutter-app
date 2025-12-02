@@ -152,16 +152,17 @@ class _PrecriptionViewState extends State<PrecriptionView> {
       ),
     );
   }
+
   // WIDGET 2: Files Grid List (Completed)
-  Widget _buildFilesList(PrecripProvider provider) {
-    final String? uid = FirebaseAuth.instance.currentUser!.uid;
+  Widget _buildFilesList(PrecripProvider value) {
+    final String uid = FirebaseAuth.instance.currentUser!.uid;
     // 1. Show Loading
-    if (provider.isLoading && provider.allFiles.isEmpty) {
+    if (value.isLoading && value.allFiles.isEmpty) {
       return const Center(child: CircularProgressIndicator(color: Colors.green));
     }
 
     // ✅ FIX: Filter lagayen taake '.emptyFolderPlaceholder' gayab ho jaye
-    final validFiles = provider.allFiles
+    final validFiles = value.allFiles
         .where((file) => file.name != '.emptyFolderPlaceholder')
         .toList();
 
@@ -216,7 +217,7 @@ class _PrecriptionViewState extends State<PrecriptionView> {
               final uid = FirebaseAuth.instance.currentUser?.uid;
               if(uid == null) return;
               Navigator.push(context, MaterialPageRoute(builder: (context)=>ImageViewScreen(
-                  imageUrl: imageUrl, fileName: file.name,uid: uid,) ));
+                imageUrl: imageUrl, fileName: file.name,uid: uid,) ));
             },
             child: Container(
               decoration: BoxDecoration(
@@ -267,4 +268,5 @@ class _PrecriptionViewState extends State<PrecriptionView> {
       ),
     );
   }
+
 }

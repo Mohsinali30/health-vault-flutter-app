@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
-import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,14 +42,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
           password: password.text.toString()).then((value){
         Navigator.pushNamed(context, 'Login');
         loadingprovider.setloading(false);
+        Utiles().toastMessage("Account Created Successfully");
       }
       ).onError((error,stackTrace){
-             Utiles().toastMessage(error.toString());
+             Utiles().toastMessage("User not found");
              loadingprovider.setloading(false);
       });
     } else {
       // Validation failed
-      Utiles().toastMessage('Validation failed');
+      Utiles().toastMessage('User not exsist');
     }
   }
   FirebaseAuth auth= FirebaseAuth.instance;
@@ -141,30 +141,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
               return
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: TextButton(
-                    // Call the handler function
-                    onPressed: () =>
-                        _handleSignIn(context,emailController,confirmpassController),
-                    child: isloading? const CircularProgressIndicator(color:whiteColor,strokeWidth: 3.0,) :
-                    Text(
-                      'Sign Up',
+                  child:
+                  ElevatedButton(
+                    onPressed: () => _handleSignIn(context,emailController,confirmpassController),
+                    child:  isloading? const CircularProgressIndicator(color: whiteColor,strokeWidth: 3.0,) : Text(
+                      'Sign Up ',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 18.0,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    style: ButtonStyle(shadowColor: WidgetStatePropertyAll(Colors.black12,),elevation:WidgetStatePropertyAll(12)  ),
                   ),
                 );
             }),
-              const SizedBox(height: 3),
+              const SizedBox(height: 6),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Already have an account? ",style: TextStyle(
                 color: textColor,
-                fontSize: 12.0,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w600,
               )),
                   TextButton(onPressed: (){
@@ -172,7 +171,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }, child:
                   Text("Login ",style: TextStyle(
                     color: whiteColor,
-                    fontSize: 12.0,
+                    fontSize: 14.0,
                     fontWeight: FontWeight.w600,
                   ),))
                 ],

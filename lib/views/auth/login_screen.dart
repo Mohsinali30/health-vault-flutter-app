@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:firebase_practice/views/HomeScreen/homescreen.dart';
-import 'package:firebase_practice/views/auth/SignUp_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../View_view_Model/provider.dart';
@@ -40,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       loadingprovider.setloading(true);
       // Validation succeeded
      auth.signInWithEmailAndPassword(email: email.text, password: password.text).then((value){
-       Utiles().toastMessage(value.user!.email.toString());
+       Utiles().toastMessage("Login Successfully");
        // Navigate to HomeScreen
        Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
        loadingprovider.setloading(false);
@@ -139,36 +138,57 @@ class _LoginScreenState extends State<LoginScreen> {
               return
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextButton(
-                  // Call the handler function
+                child:
+                ElevatedButton( 
                   onPressed: () => _handleSignIn(context,emailController,passController),
-                  child: isloading? const CircularProgressIndicator(color: whiteColor,strokeWidth: 3.0,) : Text(
-                    'Login ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.w600,
+                    child:  isloading? const CircularProgressIndicator(color: whiteColor,strokeWidth: 3.0,) : Text(
+                      'Login ',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                style: ButtonStyle(shadowColor: WidgetStatePropertyAll(Colors.black12,),elevation:WidgetStatePropertyAll(12)  ),
                 ),
+
+                
               );}),
               const SizedBox(height: 3),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("don't have an account? ",style: TextStyle(
-                    color: textColor,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                  )),
-                  TextButton(onPressed: (){
-                    Navigator.pushNamed(context, 'Signup');
-                  }, child: Text("Sign Up",style: TextStyle(
-                    color: whiteColor,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                  ),),)
-                ],
+              TextButton(
+                onPressed: (){
+                  Navigator.pushNamed(context, 'ForgotScreen');
+                },
+                child: Text("Forgot Password ",style: TextStyle(
+                  color: textColor,
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.w600,
+                )
+                ),
+              ),
+              const SizedBox(height: 3),
+
+              Padding(
+                padding: const EdgeInsets.only(top: 120),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+
+                  children: [
+                    Text("don't have an account? ",style: TextStyle(
+                      color: textColor,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w600,
+                    )
+                    ),
+                    TextButton(onPressed: (){
+                      Navigator.pushNamed(context, 'Signup');
+                    }, child: Text("Sign Up",style: TextStyle(
+                      color: whiteColor,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w600,
+                    ),),)
+                  ],
+                ),
               ),
 
           /*

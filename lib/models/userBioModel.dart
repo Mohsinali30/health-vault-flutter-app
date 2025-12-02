@@ -5,9 +5,10 @@ class BioModel {
   String? gender;
   String? bgroup;
   String? userId;
+  String? Profileimage;
 
 
-  BioModel({required this.fullname, this.email, this.dob, this.gender,this.bgroup,this.userId});
+  BioModel({required this.fullname, this.email, this.dob, this.gender,this.bgroup,this.userId,this.Profileimage});
 
   // Map mein convert karte waqt simple strings jayenge
   static Map<String, dynamic> toMap(BioModel bio,  context) {
@@ -18,6 +19,7 @@ class BioModel {
       "Gender": bio.gender,
       "BloodGroup": bio.bgroup,
       "userId": bio.userId,
+      "ProfileImage":bio.Profileimage,
     };
   }
 
@@ -29,7 +31,8 @@ class BioModel {
       dob :map["DOB"], // Direct String
       gender:  map["Gender"],
       bgroup: map["BloodGroup"],
-      userId: map["userId"]
+      userId: map["userId"],
+        Profileimage: map["ProfileImage"]
     );
   }
 }

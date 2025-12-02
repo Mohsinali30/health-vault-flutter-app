@@ -11,9 +11,8 @@ import '../utiles/ProfilecustomField.dart';
 
 
 
-
 class MyProfileScreen extends StatefulWidget {
-  const MyProfileScreen({Key? key}) : super(key: key);
+  const MyProfileScreen({super.key});
 
   @override
   State<MyProfileScreen> createState() => _MyProfileScreenState();
@@ -32,7 +31,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       await db.collection("UserBio").doc(bio.userId).set(BioModel.toMap(bio, context),
           SetOptions(merge: true) // Optional: merge ensures we update fields, not just overwrite
       ).then((value)=>{
-        Utiles().toastMessage("Added Successfully")
+        Utiles().toastMessage("Added Successfully"),
       });
     }catch(e){
       Utiles().toastMessage(e.toString());
@@ -40,6 +39,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
   final auth = FirebaseAuth.instance;
   final uid = FirebaseAuth.instance.currentUser;
+
 
   @override
   void initState() {
@@ -193,7 +193,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                         );
                          addBio(bio);
                            value.setisEditing(false);
-
+                      // Upload Image call karein
+                        await Provider.of<BioProvider>(context, listen: false).UploadProfileImage();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryGreen,
@@ -227,43 +228,73 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
 
   // Helper widget for the Profile Picture (for modularity)
   Widget _buildProfilePicture() {
-    return Center(
-      child: Stack(
-        children:[
-          // Profile Avatar Circle
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade200, // Light grey background for the avatar
-              border: Border.all(color: primaryGreen, width: 1),
-            ),
-            child: const Icon(
-              Icons.person,
-              size: 60,
-              color: primaryGreen,
-            ),
-          ),
-          // Edit Icon
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: const BoxDecoration(
-                color: primaryGreen,
-                shape: BoxShape.circle,
+    return
+      Consumer<BioProvider>(builder:(context, value, child){
+       // Logic ko alag variable mein rakhein taake crash na ho
+        ImageProvider? getImage() {
+          // 1. Agar abhi Gallery se image select ki hai
+          if (value.profileimage != null) {
+            return FileImage(value.profileimage!);
+          }
+          // 2. Agar Firebase se data aya hai aur image URL null nahi hai
+          // Note: Humne 'value.userBio?' use kiya (Null Safety)
+          else if (value.userBio != null &&
+              value.userBio!.Profileimage != null &&
+              value.userBio!.Profileimage!.isNotEmpty) {
+            return NetworkImage(value.userBio!.Profileimage!);
+          }
+          // 3. Agar kuch nahi hai to default asset
+          return const AssetImage('assets/image.png');
+        }
+       return Center(
+          child: Stack(
+            children:[
+              // Profile Avatar Circle
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.shade200, // Light grey background for the avatar
+                  border: Border.all(color: primaryGreen, width: 1),
+                    // Logic: Agar new image select ki hai to wo dikhao,
+                    // warna purani URL dikhao, warna default icon.
+                    image:DecorationImage(
+                      fit: BoxFit.cover,
+                        image: getImage()!,)
+                ),
+               
+
               ),
-              child: const Icon(
-                Icons.edit,
-                color: Colors.white,
-                size: 20,
+              // Edit Icon
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: ()=> value.PickImage(),
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(
+                      color: primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+
               ),
-            ),
+              if(value.isuploading)
+                const Positioned.fill(child:
+                CircularProgressIndicator(color: Colors.green),),
+
+            ],
           ),
-        ],
-      ),
-    );
+        );
+      }
+      );
   }
 }

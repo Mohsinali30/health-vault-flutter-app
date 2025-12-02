@@ -6,10 +6,8 @@ import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../View_view_Model/provider.dart';
 
 class BucketOperation{
   final supaBaseRef = Supabase.instance.client;
@@ -50,7 +48,7 @@ class BucketOperation{
     // provider.setloading(true);
      try{
        final fileData = await supaBaseRef.storage.from("files").remove([filepath]);
-       if (fileData.isNotEmpty && fileData[0].name != null) {
+       if (fileData.isNotEmpty) {
          Utiles().toastMessage("${fileData[0].name} successfully deleted!");
 
         // provider.fetchallFiles(context);

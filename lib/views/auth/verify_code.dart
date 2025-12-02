@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class VerifyCode extends StatefulWidget {
  final String verficationId;
-   VerifyCode({required this.verficationId});
+   const VerifyCode({super.key, required this.verficationId});
 
   @override
   State<VerifyCode> createState() => _VerifyCodeState();

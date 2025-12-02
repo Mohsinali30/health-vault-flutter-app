@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'AppColors.dart';
@@ -9,14 +8,14 @@ class ProfileCustomField extends StatelessWidget {
   final bool readOnly;
   final  TextEditingController controll;
 
-   ProfileCustomField({
-    Key? key,
+   const ProfileCustomField({
+    super.key,
     required this.icon,
     required this.label,
     this.readOnly = false,
     required this.controll,
     // By default, profile fields are read-only
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

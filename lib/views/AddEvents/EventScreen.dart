@@ -448,7 +448,7 @@ class _EventCardState extends State<EventCard> {
                   provider.setisAdding(false);
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                  backgroundColor: WidgetStateProperty.all<Color>(Colors.green),
                 ),
                 child: Text(
                   "Save",
