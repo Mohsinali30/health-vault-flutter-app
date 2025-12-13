@@ -1,10 +1,8 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/material.dart';
-
 import '../models/eventModel.dart';
 
 
@@ -29,7 +27,7 @@ class EventProvider with ChangeNotifier{
 
     _eventSubscription = FirebaseFirestore.instance
         .collection("Events")
-        .where('userId', isEqualTo: uid) // ✅ Sirf is user ka data layega
+        .where('userId', isEqualTo: uid) // Sirf is user ka data layega
         .snapshots().listen((snapshot){
 
         // Load hone se pehle list clear karna zaroori hai, taaki duplicate na ho
@@ -49,6 +47,17 @@ class EventProvider with ChangeNotifier{
         notifyListeners();
         Utiles().toastMessage("Event deleted");
       });
+
+  }
+
+  Future<void> deleteReminder (String docid)async {
+      await FirebaseFirestore.instance
+          .collection("Events")
+          .doc(docid)
+          .update({"isreminder": false});
+
+      notifyListeners();
+      Utiles().toastMessage("Reminder deleted");
 
   }
 

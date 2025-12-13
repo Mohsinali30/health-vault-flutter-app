@@ -75,9 +75,9 @@ if(profileimage ==null){
 
     await FirebaseFirestore.instance.collection('UserBio').
     doc(user.uid).update({'ProfileImage': imageurl});
-    Utiles().toastMessage("Profile Picture Updated!");
+    //Utiles().toastMessage("Profile Picture Updated!");
   }on StorageException catch(e){
-    Utiles().toastMessage("Storage Error:");
+    Utiles().toastMessage("Storage Error:${e.toString()}");
   }catch(e){
     Utiles().toastMessage("Error");
   }finally{
@@ -100,7 +100,9 @@ if(profileimage ==null){
       TextEditingController emailC,
       TextEditingController dobC,
       TextEditingController genderC,
-      TextEditingController bloodC) async {
+      TextEditingController bloodC,
+
+      ) async {
 
     // Step A: Get Current User ID safely
     String? uid = FirebaseAuth.instance.currentUser?.uid;
@@ -126,7 +128,6 @@ if(profileimage ==null){
         // 1. Data ko Model mein convert karein
         var data = snapshot.docs.first.data() as Map<String, dynamic>;
         _userBio = BioModel.fromMap(data);
-
         // 2. Controllers mein data fill karein (UI Update)
         nameC.text = _userBio?.fullname ?? "";
         emailC.text = _userBio?.email ?? "";
@@ -147,7 +148,7 @@ if(profileimage ==null){
         _isEditing = true;
       }
     } catch (e) {
-      print("Error fetching bio: $e");
+      Utiles().toastMessage("Can't fetch data: ${e.toString()}");
     }
 
     // Step E: Stop Loading

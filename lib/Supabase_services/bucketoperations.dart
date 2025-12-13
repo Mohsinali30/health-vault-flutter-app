@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:open_filex/open_filex.dart';
@@ -25,7 +26,6 @@ class BucketOperation{
 
      Future<void> DownloadAndOpen(String filepath)async
      {//final provider= Provider.of<Loadingstate>(context,listen: false);/
-
 
        try{
 

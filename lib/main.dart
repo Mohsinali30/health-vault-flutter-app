@@ -14,15 +14,14 @@ import 'package:firebase_practice/views/auth/SignUp_Screen.dart';
 import 'package:firebase_practice/views/auth/forgotPasswordScreen.dart';
 import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:firebase_practice/views/auth/splash_screen.dart';
-import 'package:firebase_practice/views/profile_Screen.dart';
-
+import 'package:firebase_practice/views/Profiles/profile_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'View_view_Model/provider.dart';
 import 'firebase_options.dart';
-
+import 'package:timezone/data/latest.dart' as tz;
 
 
 void main() async{
@@ -36,6 +35,7 @@ await Supabase.initialize(
 );
 //  Sirf ek line likhni hai init karne ke liye
   await NotificationService().initNotification();
+  tz.initializeTimeZones();
   runApp(const MyApp());
 }
 
@@ -73,7 +73,6 @@ class MyApp extends StatelessWidget {
               'UserProfile': (context) =>  MyProfileScreen(),
               'TipsView': (context) =>  ShowTipsScreen(),
               'ForgotScreen': (context)=> Forgotpasswordscreen(),
-
 
 
 

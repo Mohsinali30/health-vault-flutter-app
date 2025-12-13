@@ -230,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 //Reverse List Logic WooHhooooo
                 final reverselist = recentFiles.length -1-index;
                 final file = recentFiles[reverselist];
+                final uid =FirebaseAuth.instance.currentUser!.uid;
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
@@ -279,7 +280,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         // 4. TRAILING: View Button
                         trailing: InkWell(
                           borderRadius: BorderRadius.circular(30),
-                          onTap: () => BucketOperation().DownloadAndOpen(file.name),
+                          onTap: (){
+                            BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}');
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(

@@ -5,9 +5,9 @@ import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../View_view_Model/bioProvider.dart';
-import '../utiles/AppColors.dart';
-import '../utiles/ProfilecustomField.dart';
+import '../../View_view_Model/bioProvider.dart';
+import '../../utiles/AppColors.dart';
+import '../../utiles/ProfilecustomField.dart';
 
 
 
@@ -203,7 +203,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                         ),
                         elevation: 5,
                       ),
-                      child:  Text(
+                      child: Text(
                         value.isEditing ? 'Save Changes' : 'Edit Profile',
                         style: TextStyle(
                           color: Colors.white,
@@ -239,7 +239,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
           // 2. Agar Firebase se data aya hai aur image URL null nahi hai
           // Note: Humne 'value.userBio?' use kiya (Null Safety)
           else if (value.userBio != null &&
-              value.userBio!.Profileimage != null &&
+              value.userBio?.Profileimage != null &&
               value.userBio!.Profileimage!.isNotEmpty) {
             return NetworkImage(value.userBio!.Profileimage!);
           }
@@ -263,7 +263,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       fit: BoxFit.cover,
                         image: getImage()!,)
                 ),
-               
+
 
               ),
               // Edit Icon
@@ -271,7 +271,10 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                 bottom: 0,
                 right: 0,
                 child: GestureDetector(
-                  onTap: ()=> value.PickImage(),
+                  onTap: (){
+                    value.PickImage();
+                    value.setisEditing(true);
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     decoration: const BoxDecoration(

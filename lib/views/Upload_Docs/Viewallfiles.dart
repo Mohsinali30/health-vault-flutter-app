@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +20,11 @@ class _ViewallfilesState extends State<Viewallfiles> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    final provider= Provider.of<Loadingstate>( context,listen: false);
-    provider.showFiles(context, provider.category);
+  //  Data fetch ko frame khatam hone ke baad schedule karein
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<Loadingstate>(context, listen: false);
+      provider.showFiles(context, provider.category);
+    });
 }
 
   @override
@@ -105,7 +109,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
                 physics: const BouncingScrollPhysics(), // Agar parent scrollable hai to ye zaroori hai
                 itemBuilder: (context, index) {
                   final file = files[index];
-
+                  final uid = FirebaseAuth.instance.currentUser?.uid;
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Card(
@@ -118,7 +122,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6.0),
                         child: GestureDetector(
-                          onTap:() => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                          onTap:() => BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}'),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
 
@@ -159,14 +163,14 @@ class _ViewallfilesState extends State<Viewallfiles> {
                                 IconButton(
                                   tooltip: "Download",
                                   icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
-                                  onPressed: () => BucketOperation().DownloadAndOpen('${provider.category}/${file.name}'),
+                                  onPressed: () => BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}'),
                                 ),
 
                                 // --- DELETE BUTTON ---
                                 IconButton(
                                   tooltip: "Delete",
                                   icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                  onPressed: () => BucketOperation().DeleteFile('${provider.category}/${file.name}'),
+                                  onPressed: () => BucketOperation().DeleteFile('$uid/${provider.category}/${file.name}'),
                                 ),
                               ],
                             ),

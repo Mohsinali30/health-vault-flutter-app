@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../utiles/event_notification.dart'; // Import for date formatting
+import '../../utiles/event_notification.dart';
 
 
 ///Event Display Screen
@@ -71,7 +71,7 @@ class _EventScreenState extends State<EventScreen> {
 
                   return
                    Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
                     child: Card(
                       elevation: 4, // Halka sa shadow
                       shadowColor: Colors.grey.withOpacity(0.3),
@@ -82,7 +82,7 @@ class _EventScreenState extends State<EventScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6.0),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
 
                           // 1. LEADING ICON (Green Circle Background)
                           leading: Container(
@@ -113,12 +113,20 @@ class _EventScreenState extends State<EventScreen> {
                                 const SizedBox(width: 4),
 
                                 Expanded(
-                                  child: Text(
-                                    "$dateString | $timeString",
-                                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
-                                    overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
-                                    maxLines: 1, // Sirf 1 line mein rakhe ga
-                                  ),
+                                 child: Row(children: [
+                                    Text(
+                                     "$dateString | ",
+                                     style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                     overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
+                                     maxLines: 1, // Sirf 1 line mein rakhe ga
+                                   ),
+                                   Text(
+                                     "$timeString",
+                                     style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                     overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
+                                     maxLines: 1, // Sirf 1 line mein rakhe ga
+                                   ),
+                                 ],),
                                 ),
                               ],
                             ),
@@ -126,7 +134,7 @@ class _EventScreenState extends State<EventScreen> {
 
                           // 4. TRAILING (Action Buttons Row)
                           trailing: SizedBox(
-                            width:100 ,
+                            width:96 ,
                             child: Row(
                              mainAxisAlignment: MainAxisAlignment.end, // Zaroori hai
                               children: [
@@ -159,7 +167,7 @@ class _EventScreenState extends State<EventScreen> {
 
                                           // Agar AJJ ka din hai, to Abhi + 1 minute set karo
                                           fullScheduledTime = now.add(const Duration(minutes: 1));
-                                          Utiles().toastMessage("Event is today! Reminder set for 1 min later.");
+                                          Utiles().toastMessage("Event is today!");
                                         } else {
                                           // Agar Kal (Yesterday) tha
                                           Utiles().toastMessage("Cannot set reminder for past dates!");
@@ -173,7 +181,7 @@ class _EventScreenState extends State<EventScreen> {
                                       NS.scheduleNotification(
                                         id: event.docId.toString(),
                                         title: "Appointment Reminder",
-                                        body: "Don't forget Today : ${event.Event}",
+                                        body: "${event.Event}",
                                         scheduledTime: fullScheduledTime,
                                       );
 
@@ -187,8 +195,8 @@ class _EventScreenState extends State<EventScreen> {
                                           .update({"isreminder": true});
 
                                     } catch (e) {
-                                      print("Error: $e");
-                                      Utiles().toastMessage("Error setting reminder: ${e.toString()}");
+                                      //print("Error: $e");
+                                      Utiles().toastMessage("Error setting reminder");
                                     }
                                   },
                                 ),

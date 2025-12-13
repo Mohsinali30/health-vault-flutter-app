@@ -2,15 +2,13 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-// ⚠️ IMPORTANT: Yeh function Class ke BAHAR hona chahiye (Top Level)
+// ⚠️ TOP LEVEL FUNCTION (Class ke bahar)
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
-  // Background mein notification par tap karne ka logic k
   print('Background Notification Tapped: ${notificationResponse.payload}');
 }
 
 class NotificationService {
-  // Singleton Pattern (Taake har jagah ek hi instance use ho)
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -18,63 +16,36 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  // 1. Initialize Function
   Future<void> initNotification() async {
-    // Timezone Init
-    tz.initializeTimeZones();
+    tz.initializeTimeZones(); // Timezone init
 
-    // Android Settings
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // iOS Settings (Optional)
-    const DarwinInitializationSettings initializationSettingsDarwin =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      // Jab app khuli ho aur user tap kare
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         print("Foreground Tap: ${response.payload}");
-        // Yahan aap Navigator use kar sakte hain
       },
-      // Jab app band ho aur user tap kare (Wo upar wala function pass karein)
       onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
     );
+
+    // Android 13+ Permission Request
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
-
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
   }
 
-  // 2. Simple Notification
-  Future<void> showNotification({required String id, required String title, required String body}) async {
-    await flutterLocalNotificationsPlugin.show(
-      id.hashCode,
-      title,
-      body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'channel_id',
-          'channel_name',
-          importance: Importance.max,
-          priority: Priority.max,
-        ),
-      ),
-    );
-  }
-
-  // 3. Scheduled Notification (Date & Time ke saath)
+  // SCHEDULE NOTIFICATION FUNCTION
   Future<void> scheduleNotification({
     required String id,
     required String title,
@@ -85,21 +56,25 @@ class NotificationService {
       id.hashCode,
       title,
       body,
-      tz.TZDateTime.from(scheduledTime, tz.local), // Time conversion
+      tz.TZDateTime.from(scheduledTime, tz.local),
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'channel_id',
-          'channel_name',
+          'health_vault_channel_v2',
+          'Health Vault Notifications',
           importance: Importance.max,
           priority: Priority.high,
+          playSound: true,
+
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, // ✅ New Property
-
+      // ✅ Yahan comma aur placement check karein
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+     // uiLocalNotificationDateInterpretation:
+      //UILocalNotificationDateInterpretation.absoluteTime, // ✅ Bilkul Sahi hai
     );
   }
 
-  // 4. Cancel Notification
+  // Cancel function
   Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
   }
