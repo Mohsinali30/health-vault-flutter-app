@@ -1,15 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_practice/models/userBioModel.dart';
-import 'package:firebase_practice/utiles/Utiles.dart';
-import 'package:firebase_practice/views/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../View_view_Model/bioProvider.dart';
 import '../../utiles/AppColors.dart';
 import '../../utiles/ProfilecustomField.dart';
-
-
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -19,285 +12,311 @@ class MyProfileScreen extends StatefulWidget {
 }
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
-  TextEditingController namecontroller = TextEditingController();
-  TextEditingController emailcontroller = TextEditingController();
-  TextEditingController dobcontroller = TextEditingController();
-  TextEditingController gendercontroller = TextEditingController();
-  TextEditingController bgroupcontroller = TextEditingController();
-
-  Future<void> addBio (BioModel bio ) async{
-    FirebaseFirestore db =FirebaseFirestore.instance;
-    try{
-      await db.collection("UserBio").doc(bio.userId).set(BioModel.toMap(bio, context),
-          SetOptions(merge: true) // Optional: merge ensures we update fields, not just overwrite
-      ).then((value)=>{
-        Utiles().toastMessage("Added Successfully"),
-      });
-    }catch(e){
-      Utiles().toastMessage(e.toString());
-    }
-  }
-  final auth = FirebaseAuth.instance;
-  final uid = FirebaseAuth.instance.currentUser;
-
+  // Controllers
+  final TextEditingController namecontroller = TextEditingController();
+  final TextEditingController emailcontroller = TextEditingController();
+  final TextEditingController dobcontroller = TextEditingController();
+  final TextEditingController gendercontroller = TextEditingController();
+  final TextEditingController bgroupcontroller = TextEditingController();
+  final TextEditingController relationcontroller = TextEditingController();
 
   @override
   void initState() {
-    // Fetch data immediately when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<BioProvider>(context, listen: false);
+    super.initState();
+    final provider = Provider.of<BioProvider>(context, listen: false);
+    final profile = provider.selectedProfile;
 
-      // Controllers pass karein taake Provider unhein fill kar sake
-      provider.getProfileData(
-          namecontroller,
-          emailcontroller,
-          dobcontroller,
-          gendercontroller,
-          bgroupcontroller
-      );
-    });
+    if (profile != null) {
+      namecontroller.text = profile.fullname;
+      emailcontroller.text = profile.email ?? "";
+      dobcontroller.text = profile.dob ?? "";
+      gendercontroller.text = profile.gender ?? "";
+      bgroupcontroller.text = profile.bgroup ?? "";
+      relationcontroller.text = profile.Relation ?? "";
+    }
   }
 
   @override
   void dispose() {
-    // 1. Saare Controllers ko dispose karein
     namecontroller.dispose();
     emailcontroller.dispose();
     dobcontroller.dispose();
     gendercontroller.dispose();
     bgroupcontroller.dispose();
+    relationcontroller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final uid = FirebaseAuth.instance.currentUser;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: primaryGreen,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-           Navigator.pop(context);
-          },
+    return Consumer<BioProvider>(builder: (context, value, child) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100], // Light grey background
+        appBar: AppBar(
+          backgroundColor: primaryGreen,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            value.selectedProfile == null ? 'Add Member' : 'Profile Details',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          actions: [
+            if (value.selectedProfile != null)
+              IconButton(
+                tooltip: "Delete Profile",
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                onPressed: () => _showDeleteDialog(context, value),
+              )
+          ],
         ),
-        title: const Text(
-          'My Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        actions: [
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // 1. HEADER SECTION (Curved Background + Avatar)
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  // Green Curve Background
+                  Container(
+                    height: 80,
+                    decoration: const BoxDecoration(
+                      color: primaryGreen,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                    ),
+                  ),
+                  // Profile Picture overlapping the curve
+                  Positioned(
+                    top: 20,
+                    child: _buildProfilePicture(value),
+                  ),
+                ],
+              ),
 
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: IconButton(onPressed: (){
-              auth.signOut().then((value){
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginScreen()));
-              }).onError((error,stackTrace){
-               Utiles().toastMessage(error.toString());
-              });
-            }, icon:  Icon(Icons.logout_outlined,color: whiteColor,size: 28,),
-              tooltip: 'logout',),
-          )
+              const SizedBox(height: 80), // Space for the overlapping avatar
 
-
-        ],
-      ),
-
-      body: Consumer<BioProvider>(builder: ( context,value,child){
-        return  SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Profile Picture Section
-                _buildProfilePicture(),
-                const SizedBox(height: 30),
-
-                // Personal Info
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              // 2. FORM SECTION (White Card)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Personal Information',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
+                      _buildSectionTitle("Personal Information"),
                       const SizedBox(height: 15),
-
                       ProfileCustomField(
-                        controll:namecontroller,
-                        icon: Icons.person_outline,
+                        controll: namecontroller,
+                        icon: Icons.person_outline_rounded,
                         label: 'Full Name',
                         readOnly: !value.isEditing,
                       ),
                       ProfileCustomField(
-                        controll:emailcontroller,
+                        controll: relationcontroller,
+                        icon: Icons.family_restroom_rounded,
+                        label: 'Relation (e.g. Brother)',
+                        readOnly: !value.isEditing,
+                      ),
+
+                      const SizedBox(height: 20),
+                      _buildSectionTitle("Contact & Bio"),
+                      const SizedBox(height: 15),
+
+                      ProfileCustomField(
+                        controll: emailcontroller,
                         icon: Icons.email_outlined,
-                        label: 'Email',
+                        label: 'Email Address',
                         readOnly: !value.isEditing,
                       ),
                       ProfileCustomField(
                         controll: dobcontroller,
-                        icon: Icons.calendar_today_outlined,
+                        icon: Icons.calendar_today_rounded,
                         label: 'Date of Birth',
                         readOnly: !value.isEditing,
                       ),
-                      ProfileCustomField(
-                        controll: gendercontroller,
-                        icon: Icons.male_outlined,
-                        label: 'Gender',
-                        readOnly: !value.isEditing,
-                      ),
-                      ProfileCustomField(
-                        controll: bgroupcontroller,
-                        icon: Icons.bloodtype_outlined,
-                        label: 'Blood Group',
-                        readOnly: !value.isEditing,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ProfileCustomField(
+                              controll: gendercontroller,
+                              icon: Icons.male_rounded,
+                              label: 'Gender',
+                              readOnly: !value.isEditing,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ProfileCustomField(
+                              controll: bgroupcontroller,
+                              icon: Icons.bloodtype_outlined,
+                              label: 'Blood Group',
+                              readOnly: !value.isEditing,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 40),
+              const SizedBox(height: 30),
 
-                // Save Changes Button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SizedBox(
-                    width: screenWidth,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (!value.isEditing) {
-                          value.setisEditing(true);
-                          return; // Aage ka code (Save wala) na chale
-                        }
-                        if (uid == null) {
-                          Utiles().toastMessage("User not logged in!");
-                          return;
-                        }
-                        BioModel bio =BioModel(
-                          fullname: namecontroller.text.toString(),
-                          email: emailcontroller.text.toString(),
-                          dob: dobcontroller.text.toString(),
-                          gender: gendercontroller.text.toString(),
-                          bgroup: bgroupcontroller.text.toString(),
-                          userId: uid.uid,
+              // 3. ACTION BUTTON
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!value.isEditing) {
+                        value.setisEditing(true);
+                      } else {
+                        value.saveProfile(
+                            namecontroller.text,
+                            emailcontroller.text,
+                            dobcontroller.text,
+                            gendercontroller.text,
+                            bgroupcontroller.text,
+                            relationcontroller.text,
+                            context
                         );
-                         addBio(bio);
-                           value.setisEditing(false);
-                      // Upload Image call karein
-                        await Provider.of<BioProvider>(context, listen: false).UploadProfileImage();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryGreen,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        elevation: 5,
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryGreen,
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      child: Text(
-                        value.isEditing ? 'Save Changes' : 'Edit Profile',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600,
+                    ),
+                    child: value.isLoading
+                        ? const SizedBox(
+                      width: 25, height: 25,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                        : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(value.isEditing ? Icons.save_rounded : Icons.edit_rounded, color: Colors.white),
+                        const SizedBox(width: 10),
+                        Text(
+                          value.isEditing ? 'Save Changes' : 'Edit Profile',
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-        );
+        ),
+      );
+    });
+  }
 
-      })
+  // --- HELPER WIDGETS ---
 
-
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title.toUpperCase(),
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: Colors.grey[400],
+        letterSpacing: 1.2,
+      ),
     );
   }
 
-  // Helper widget for the Profile Picture (for modularity)
-  Widget _buildProfilePicture() {
-    return
-      Consumer<BioProvider>(builder:(context, value, child){
-       // Logic ko alag variable mein rakhein taake crash na ho
-        ImageProvider? getImage() {
-          // 1. Agar abhi Gallery se image select ki hai
-          if (value.profileimage != null) {
-            return FileImage(value.profileimage!);
-          }
-          // 2. Agar Firebase se data aya hai aur image URL null nahi hai
-          // Note: Humne 'value.userBio?' use kiya (Null Safety)
-          else if (value.userBio != null &&
-              value.userBio?.Profileimage != null &&
-              value.userBio!.Profileimage!.isNotEmpty) {
-            return NetworkImage(value.userBio!.Profileimage!);
-          }
-          // 3. Agar kuch nahi hai to default asset
-          return const AssetImage('assets/image.png');
-        }
-       return Center(
-          child: Stack(
-            children:[
-              // Profile Avatar Circle
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey.shade200, // Light grey background for the avatar
-                  border: Border.all(color: primaryGreen, width: 1),
-                    // Logic: Agar new image select ki hai to wo dikhao,
-                    // warna purani URL dikhao, warna default icon.
-                    image:DecorationImage(
-                      fit: BoxFit.cover,
-                        image: getImage()!,)
-                ),
+  Widget _buildProfilePicture(BioProvider value) {
+    ImageProvider getImage() {
+      if (value.profileimage != null) return FileImage(value.profileimage!);
+      if (value.selectedProfile?.Profileimage != null && value.selectedProfile!.Profileimage!.isNotEmpty) {
+        return NetworkImage(value.selectedProfile!.Profileimage!);
+      }
+      return const AssetImage('assets/image.png');
+    }
 
-
-              ),
-              // Edit Icon
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: (){
-                    value.PickImage();
-                    value.setisEditing(true);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: const BoxDecoration(
-                      color: primaryGreen,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-
-              ),
-              if(value.isuploading)
-                const Positioned.fill(child:
-                CircularProgressIndicator(color: Colors.green),),
-
+    return Stack(
+      children: [
+        // Avatar Ring
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 5))
             ],
           ),
-        );
-      }
-      );
+          child: CircleAvatar(
+            radius: 60, // Bigger size
+            backgroundColor: Colors.grey[200],
+            backgroundImage: getImage(),
+          ),
+        ),
+
+        // Edit Camera Button
+        if (value.isEditing)
+          Positioned(
+            bottom: 5,
+            right: 5,
+            child: GestureDetector(
+              onTap: () => value.PickImage(),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: primaryGreen,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                ),
+                child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, BioProvider value) {
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text("Delete Profile"),
+        content: const Text("Are you sure you want to delete this family member? This action cannot be undone."),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              value.deleteProfile(context);
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 }

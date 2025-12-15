@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../View_view_Model/bioProvider.dart';
 import '../../utiles/AppColors.dart';
 import 'dart:io';
 import '../../utiles/Utiles.dart';
@@ -53,8 +54,17 @@ class _UploadScreenState extends State<UploadScreen> {
   void initState() {
     super.initState();
     _selectedCategory = HealthCategory.diagnostics;
-    final provider= Provider.of<Loadingstate>( context,listen: false);
-    provider.showFiles(context, provider.category);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<Loadingstate>(context, listen: false);
+
+      final bioProvider = Provider.of<BioProvider>(context, listen: false);
+      final profileId = bioProvider.activeProfile?.docId;
+
+      if(profileId != null) {
+        // ProfileId pass karein
+        provider.showFiles(context, provider.category, profileId);
+      }
+    });
   }
   // --- METHODS ---
 
@@ -113,18 +123,20 @@ class _UploadScreenState extends State<UploadScreen> {
 
   void _startUpload() async
   {
+    // 👇 1. BioProvider se Active Profile ID lein
+    final bioProvider = Provider.of<BioProvider>(context, listen: false);
+    final String? profileId = bioProvider.activeProfile?.docId;
     final provider = Provider.of<Loadingstate>(context, listen: false);
-    // 1. Get Current User ID
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      Utiles().toastMessage("User not logged in. Cannot upload.");
+    if (profileId == null) {
+      Utiles().toastMessage("Please go back and select a profile first.");
       return;
     }
-   final uid =user.uid;
+
     if (_selectedCategory == null) {
       Utiles().toastMessage("Please select a file category.");
       return;
     }
+
 
     //  CORRECT WAY: Value is accessed and used inside the function body
     final HealthCategory category = _selectedCategory!;
@@ -135,7 +147,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     final String file = fileToUpload!.path;
     final fileName = fileToUpload.path.split('/').last;
-    final String filpathname = '$uid/$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
+    final String filpathname = '$profileId/$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
 
     // Create a unique file path within the bucket
     // Format: category/filename_timestamp.ext
@@ -147,7 +159,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
       if (mounted) {
         Utiles().toastMessage('File Upload Successful!}');
-        provider.showFiles(context, provider.category);
+        provider.showFiles(context, provider.category,profileId);
         setState(() {
           _selectedFile = null; // Clear file selection
           _selectedCategory = HealthCategory.diagnostics;
@@ -214,7 +226,16 @@ class _UploadScreenState extends State<UploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Light background for contrast
+
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context); // Navigates back
+          },
+        ),
+        automaticallyImplyLeading: false,
         backgroundColor: primaryGreen,
         title: const Text(
           'Upload Health Record',

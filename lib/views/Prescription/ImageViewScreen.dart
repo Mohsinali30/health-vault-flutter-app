@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../View_view_Model/PrecripProvider.dart';
+import '../../View_view_Model/bioProvider.dart';
 import '../../utiles/Utiles.dart';
 
 class ImageViewScreen extends StatefulWidget {
@@ -57,6 +58,9 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
 
   //  2. DELETE FUNCTION (Ye Theek Tha)
   Future<void> _deleteImage() async {
+    final bioProvider = Provider.of<BioProvider>(context,listen: false);
+    // Agar profile select nahi hai to safe side empty string ya return kar dein
+    final String profileId = bioProvider.activeProfile?.docId ?? "";
     bool? confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -81,7 +85,7 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
 
       if (mounted) {
         Utiles().toastMessage("Deleted Successfully 🗑");
-        await Provider.of<PrecripProvider>(context, listen: false).showFiles(context);
+        await Provider.of<PrecripProvider>(context, listen: false).showFiles(context,profileId);
         Navigator.pop(context);
       }
     } catch (e) {
@@ -96,6 +100,12 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context); // Navigates back
+          },
+        ),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(widget.fileName,

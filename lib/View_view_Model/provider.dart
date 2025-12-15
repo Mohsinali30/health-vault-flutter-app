@@ -36,15 +36,12 @@ notifyListeners();
 
 
 
-  Future<void> showFiles(BuildContext context, String categoryFolder) async {
+  Future<void> showFiles(BuildContext context, String categoryFolder,String profileId) async {
     final provider = Provider.of<Loadingstate>(context, listen: false);
 
-    // 1. Get Current User ID
-    final String? uid = FirebaseAuth.instance.currentUser?.uid;
-
     // Safety Check: If no user is logged in, stop here
-    if (uid == null) {
-      Utiles().toastMessage("User not logged in.");
+    if (profileId == null) {
+      Utiles().toastMessage("No Profile Selected.");
       return;
     }
 
@@ -53,7 +50,7 @@ notifyListeners();
     try {
       // 2. Construct the User-Specific Path
       // Logic: Look inside the folder named after the UID, then the category
-      final String userSpecificPath = '$uid/$categoryFolder';
+      final String userSpecificPath = '$profileId/$categoryFolder';
 
       // 3. Fetch list from that path
       final List<FileObject> responsefile = await supaBaseRef.storage

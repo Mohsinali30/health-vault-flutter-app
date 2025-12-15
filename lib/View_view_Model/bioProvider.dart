@@ -1,158 +1,219 @@
 import 'dart:io';
-
-import 'package:firebase_practice/models/userBioModel.dart';
-import 'package:firebase_practice/utiles/Utiles.dart';
+import 'package:firebase_practice/models/userBioModel.dart'; // Import your model
+import 'package:firebase_practice/utiles/Utiles.dart'; // Import your utils
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 class BioProvider with ChangeNotifier {
-
   File? _profileimage;
-
-  // 1. State Variables
   bool _isEditing = false;
   bool _isLoading = false;
-  bool _isuploading= false;
-  BioModel? _userBio; // To store the fetched data
+  bool _isuploading = false;
+  BioModel? _activeProfile; // Stores the currently selected user
 
-  // 2. Getters
+  BioModel? get activeProfile => _activeProfile;
+
+  // List to store multiple profiles
+  List<BioModel> _profilesList = [];
+
+  // Currently selected profile for editing/viewing
+  BioModel? _selectedProfile;
+
+  // Getters
+  List<BioModel> get profilesList => _profilesList;
+  BioModel? get selectedProfile => _selectedProfile;
   bool get isEditing => _isEditing;
   bool get isLoading => _isLoading;
   bool get isuploading => _isuploading;
-  BioModel? get userBio => _userBio;
   File? get profileimage => _profileimage;
 
-  final ImagePicker picker= ImagePicker();
+  final ImagePicker picker = ImagePicker();
 
-  //Image pick Logic
-Future<void> PickImage()async{
-  try{
-      final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery,
-    imageQuality: 50,
-    );
-      if(pickedImage != null){
+  // Function to set the active profile
+  void setActiveProfile(BioModel profile) async{
+    _activeProfile = profile;
+    notifyListeners(); // UI will update to show selection
+    Utiles().toastMessage("Switched to ${profile.fullname}");
+    final pref =await SharedPreferences.getInstance();
+    if(profile.docId != null){
+      await pref.setString('saved_profile_id', profile.docId!);
+    }}
+
+
+    // Is function ko tab call karein jab aap Firebase se Profiles fetch kar chuke hon
+// --- A. JAB APP CHALAY TO LAST PROFILE LOAD KARE ---
+    Future<void> loadLastSelectedProfile() async {
+      final prefs = await SharedPreferences.getInstance();
+      // Memory se ID nikalein
+      String? savedId = prefs.getString('last_selected_profile_id');
+
+      // Agar ID mili aur hamari List khali nahi hai
+      if (savedId != null && _profilesList.isNotEmpty) {
+        try {
+          // List mein se wo banda dhoond kar active set karein
+          _activeProfile = _profilesList.firstWhere((element) => element.docId == savedId);
+        } catch (e) {
+          print("Saved profile shyad delete ho gayi ho");
+        }
+      }
+    }
+
+
+  // --- SETTERS ---
+  void setisEditing(bool value) {
+    _isEditing = value;
+    notifyListeners();
+  }
+
+
+  
+  // Jab user "Add Profile" click kare
+  void clearSelectedProfile() {
+    _selectedProfile = null;
+    _profileimage = null;
+    _isEditing = true; // New profile is always in edit mode initially
+    notifyListeners();
+  }
+
+  // Jab user kisi Card par click kare
+  void setSelectedProfile(BioModel profile) {
+    _selectedProfile = profile;
+    _profileimage = null; // Clear local image, use URL from profile
+    _isEditing = false; // View mode initially
+    notifyListeners();
+  }
+
+  // --- IMAGE LOGIC (Same as before) ---
+  Future<void> PickImage() async {
+    try {
+      final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+      if (pickedImage != null) {
         _profileimage = File(pickedImage.path);
         notifyListeners();
       }
-  }catch(e){
-    Utiles().toastMessage("Can not Pick Image");
+    } catch (e) {
+      Utiles().toastMessage("Can not Pick Image");
+    }
   }
 
-}
+  Future<String?> UploadProfileImage(String uid) async {
+    final db = Supabase.instance.client;
+    if (_profileimage == null) return _selectedProfile?.Profileimage; // Return old image if no new one
 
-
-// Image Upload Logic
-  Future<void> UploadProfileImage()async{
-  final db = Supabase.instance.client;
-  final user= FirebaseAuth.instance.currentUser;
-
-if(profileimage ==null){
-  Utiles().toastMessage("Please select an image first");
-  return;
-}  
-  if(user == null){
-    Utiles().toastMessage("user is not loggedin");
-    return;
-  }
-
-    _isuploading= true;
-  notifyListeners();
-  try{
-    //file path
-    final String filepath = '${user.uid}/profile/avatar.jpg';
-    //ulpoad to supabase
-    await db.storage.from('users_profiles').upload(filepath, profileimage!,
-        fileOptions:
-        //Upsert: Overwrite old file
-        FileOptions(upsert: true));
-
-    final String imageurl = db.storage.from('users_profiles').
-    getPublicUrl(filepath);
-
-    await FirebaseFirestore.instance.collection('UserBio').
-    doc(user.uid).update({'ProfileImage': imageurl});
-    //Utiles().toastMessage("Profile Picture Updated!");
-  }on StorageException catch(e){
-    Utiles().toastMessage("Storage Error:${e.toString()}");
-  }catch(e){
-    Utiles().toastMessage("Error");
-  }finally{
-    _isuploading=false;
+    _isuploading = true;
     notifyListeners();
+    try {
+      // Unique path for every profile image using Timestamp
+      final String filepath = '$uid/profile/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await db.storage.from('users_profiles').upload(filepath, _profileimage!, fileOptions: FileOptions(upsert: true));
+      final String imageurl = db.storage.from('users_profiles').getPublicUrl(filepath);
+      return imageurl;
+    } catch (e) {
+      Utiles().toastMessage("Image Upload Error");
+      return null;
+    } finally {
+      _isuploading = false;
+      notifyListeners();
+    }
   }
-  }
 
-  // 3. Setters
-  void setisEditing(bool isEditing) {
-    _isEditing = isEditing;
-    notifyListeners();
-  }
+  // --- CRUD OPERATIONS ---
 
-
-
-
-  // 4. Main Function: Get Data & Validate
-  Future<void> getProfileData(TextEditingController nameC,
-      TextEditingController emailC,
-      TextEditingController dobC,
-      TextEditingController genderC,
-      TextEditingController bloodC,
-
-      ) async {
-
-    // Step A: Get Current User ID safely
+  // 1. Fetch All Profiles for Current User
+  Future<void> fetchAllProfiles() async {
     String? uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    // Step B: Start Loading
+    _isLoading = true;
+    // notifyListeners(); // Avoid rebuilds during build phase
+
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection("UserBio")
+          .where('userId', isEqualTo: uid)
+          .get();
+
+      _profilesList = snapshot.docs.map((doc) {
+        return BioModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+
+      await loadLastSelectedProfile();
+
+    } catch (e) {
+      Utiles().toastMessage(e.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 2. Save or Update Profile
+  Future<void> saveProfile(
+      String name, String email, String dob, String gender, String bgroup, String relation, BuildContext context) async {
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Step C: Execute Query
-      // Note: We use .get() to retrieve the data
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection("UserBio")
-          .where('userId', isEqualTo: uid) // Check spelling: 'userId' vs 'userid' in your DB
-          .limit(1) // Optimization: We only expect 1 profile per user
-          .get();
+      // Upload Image First if selected
+      String? imgUrl = await UploadProfileImage(uid);
 
-      // Step D: Validate if Data Exists
-      if (snapshot.docs.isNotEmpty) {
-        // --- SCENARIO 1: USER EXISTS ---
+      BioModel newBio = BioModel(
+        fullname: name,
+        email: email,
+        dob: dob,
+        gender: gender,
+        bgroup: bgroup,
+        Relation: relation,
+        userId: uid,
+        Profileimage: imgUrl ?? _selectedProfile?.Profileimage, // Use new URL or keep old
+      );
 
-        // 1. Data ko Model mein convert karein
-        var data = snapshot.docs.first.data() as Map<String, dynamic>;
-        _userBio = BioModel.fromMap(data);
-        // 2. Controllers mein data fill karein (UI Update)
-        nameC.text = _userBio?.fullname ?? "";
-        emailC.text = _userBio?.email ?? "";
-        dobC.text = _userBio?.dob ?? "";
-        genderC.text = _userBio?.gender ?? "";
-        bloodC.text = _userBio?.bgroup ?? "";
-
-        // 3. View Mode ON karein (Editing OFF)
-        _isEditing = false;
-
+      CollectionReference ref = FirebaseFirestore.instance.collection("UserBio");
+      if (_selectedProfile == null) {
+        // CASE 1: CREATE NEW PROFILE
+        // .add() automatically creates a document with a random ID
+        await ref.add(BioModel.toMap(newBio, context));
+        Utiles().toastMessage("Profile Created Successfully");
       } else {
-        // --- SCENARIO 2: NEW USER (NO DATA) ---
-
-        // 1. Model null rakhein
-        _userBio = null;
-
-        // 2. Edit Mode ON karein (Taake user form fill kar sake)
-        _isEditing = true;
+        // CASE 2: UPDATE EXISTING PROFILE
+        // CHANGE: Use .set() with merge: true instead of .update()
+        // This prevents the "not-found" error if the document is missing
+        await ref.doc(_selectedProfile!.docId).set(
+            BioModel.toMap(newBio, context),
+            SetOptions(merge: true)
+        );
+        Utiles().toastMessage("Profile Updated Successfully");
       }
-    } catch (e) {
-      Utiles().toastMessage("Can't fetch data: ${e.toString()}");
-    }
 
-    // Step E: Stop Loading
-    _isLoading = false;
-    notifyListeners();
+      // Refresh list after save
+      await fetchAllProfiles();
+      Navigator.pop(context); // Go back to grid
+
+    } catch (e) {
+      Utiles().toastMessage(e.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 3. Delete Profile
+  Future<void> deleteProfile(BuildContext context) async {
+    if (_selectedProfile == null || _selectedProfile!.docId == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection("UserBio").doc(_selectedProfile!.docId).delete();
+      Utiles().toastMessage("Profile Deleted");
+      await fetchAllProfiles(); // Refresh list
+      Navigator.pop(context); // Close detail screen
+    } catch (e) {
+      Utiles().toastMessage("Error deleting: $e");
+    }
   }
 }

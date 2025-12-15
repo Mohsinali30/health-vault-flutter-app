@@ -20,7 +20,7 @@ class QuickActionButton extends StatelessWidget {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      color: cardBackgroundColor, // Use the defined card background color
+      color: Colors.white, // Use the defined card background color
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),

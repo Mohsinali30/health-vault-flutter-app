@@ -49,6 +49,7 @@ dependencies:
   image_picker: ^1.2.1
   dio: ^5.3.3               # Image internet se download karne ke liye
   gal: ^2.3.0
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:

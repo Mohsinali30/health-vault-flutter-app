@@ -10,7 +10,7 @@ class EventModel {
   EventModel({this.isreminder= false,required this.Event, this.date, this.time,this.userId,this.docId});
 
   // Map mein convert karte waqt simple strings jayenge
-  static Map<String, dynamic> toMap(EventModel event,  context) {
+  static Map<String, dynamic> toMap(EventModel event) {
     return {
       "isreminder":event.isreminder,
       "Event": event.Event,

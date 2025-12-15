@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_practice/View_view_Model/bioProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
@@ -24,9 +25,14 @@ class _HomeScreenState extends State<HomeScreen> {
     saveDataToSupabase();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<Loadingstate>(context, listen: false);
+      final bio = Provider.of<BioProvider>(context, listen: false);
+       final profileId =bio.activeProfile?.docId;
+
       // Assuming 'fetchallFiles' is now correctly moved to your provider class (as advised previously)
-      provider.showFiles(context, provider.category);
-    });
+      if(profileId != null) {
+        // ProfileId pass karein
+        provider.showFiles(context, provider.category, profileId);
+      }    });
   }
 
   Future<void> saveDataToSupabase() async {
@@ -46,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Overall background is white
+        backgroundColor: Colors.grey[50], // Light background for contrast
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: primaryGreen, // Top app bar green
@@ -63,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           tooltip: 'Profile Setting',
           onPressed: () {
-            Navigator.pushNamed(context, 'UserProfile');
+            Navigator.pushNamed(context, 'SelectProfileScreen');
           },
         ),
       ),

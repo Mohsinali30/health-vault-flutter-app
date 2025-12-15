@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_practice/View_view_Model/bioProvider.dart';
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/models/eventModel.dart';
@@ -8,232 +9,192 @@ import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import '../../utiles/event_notification.dart';
 
-
-///Event Display Screen
 class EventScreen extends StatefulWidget {
   const EventScreen({super.key});
+
   @override
   State<EventScreen> createState() => _EventScreenState();
 }
+
 class _EventScreenState extends State<EventScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    final prov=  Provider.of<EventProvider>(context, listen: false);
-    prov.getdata();
+      final bioProvider = Provider.of<BioProvider>(context, listen: false);
+      final eventProvider = Provider.of<EventProvider>(context, listen: false);
+
+      // SAFE INIT: Only fetch data if a profile is selected
+      if (bioProvider.activeProfile != null && bioProvider.activeProfile!.docId != null) {
+        eventProvider.getdata(bioProvider.activeProfile!.docId!);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider= Provider.of<IsAdding>(context);
+    final bioProvider = Provider.of<BioProvider>(context);
+    final provider = Provider.of<IsAdding>(context);
+
+    // 1. Notification Service ko aik baar define karein (Duplicate remove kar diya)
+    final NotificationService NS = NotificationService();
     bool isadding = provider.isadding;
-    NotificationService NS= NotificationService();
-    return
-      Scaffold(
+
+    // --- FIX START: CRASH PREVENTION ---
+    // Pehle check karein, agar null hai to return kar dein
+    if (bioProvider.activeProfile == null || bioProvider.activeProfile!.docId == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey[50], // Light background for contrast
+
+        appBar: AppBar(title: const Text("Events"), backgroundColor: Colors.green),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.person_off, size: 60, color: Colors.grey),
+              SizedBox(height: 20),
+              Text("No Family Member Selected", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("Please go back and select a profile."),
+            ],
+          ),
+        ),
+      );
+    }
+    // --- FIX END ---
+
+    //  AB HUM SAFE HAIN: Ab profileId define karein
+    final activeProfile = bioProvider.activeProfile!;
+    String profileId = activeProfile.docId!; // Ab ye crash nahi karega
+
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Appointment'),
-        actions: [GestureDetector(
-            onTap: (){
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context); // Navigates back
+          },
+        ),
+        title: Text('${activeProfile.fullname}: Appointments',          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.green,
+        actions: [
+          GestureDetector(
+            onTap: () {
               provider.setisAdding(true);
             },
-            child: Icon(Icons.add,color: Colors.white,size: 28,))],
-        backgroundColor: Colors.green,
+            child: const Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: Icon(Icons.add, color: Colors.white, size: 28),
+            ),
+          )
+        ],
       ),
-      body:  Consumer<EventProvider>(builder: (context,value,child){
-        return
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: isadding ?
-              EventCard()
-                  :(value.event.isEmpty
-                  ? const Center(child: Text("No Appointment is Added"))
-                  : ListView.builder(
-                itemCount: value.event.length,
-                itemBuilder: (context, index) {
-                  EventModel event = value.event[index];
-                  String dateString = event.date == null
-                      ? 'No Date'
-                      : event.date.toString();
-
-                  // Time
-                  // TimeOfDay.format(context) is correct here for display
-                  String timeString = event.time == null
-                      ? 'No Time'
-                      : event.time.toString();
-
-                  return
-                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
-                    child: Card(
-                      elevation: 4, // Halka sa shadow
-                      shadowColor: Colors.grey.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16), // Gol kinare
+      body: Consumer<EventProvider>(builder: (context, value, child) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: isadding
+                ? const EventCard()
+                : (value.event.isEmpty
+                ? const Center(child: Text("No Appointments Added"))
+                : ListView.builder(
+              itemCount: value.event.length,
+              itemBuilder: (context, index) {
+                EventModel event = value.event[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.green.withOpacity(0.1),
+                        child: const Icon(Icons.access_time_filled, color: Colors.green),
                       ),
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6.0),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-
-                          // 1. LEADING ICON (Green Circle Background)
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: primaryGreen.withOpacity(0.1), // Halka green background
-                              shape: BoxShape.circle,
+                      title: Text(event.Event,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text("${event.date} | ${event.time}"),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: "Set Reminder",
+                            icon: Icon(
+                              event.isreminder == true ? Icons.notifications_active : Icons.notifications_none,
+                              color: event.isreminder == true ? Colors.green : Colors.grey,
                             ),
-                            child: Icon(Icons.access_time_filled, color: primaryGreen, size: 24),
+                            onPressed: () async {
+                              try {
+                                DateTime datePart = DateFormat.yMMMd().parse(event.date!);
+                                // Farz karein event.time = "1:56 AM" hai
+                                DateFormat timeFormat = DateFormat("h:mm a"); // Format match karein apne data se
+                                DateTime timePart = timeFormat.parse(event.time!);
+
+                                // TODO: Aap yahan time bhi parse kar sakte hain
+                                DateTime fullScheduledTime = DateTime(
+                                    datePart.year,
+                                    datePart.month,
+                                    datePart.day,
+                                    timePart.hour,
+                                    timePart.minute,
+                                );
+                                // 4. Past Check (Agar time guzar chuka hai to notification nahi bajegi)
+                                if (fullScheduledTime.isBefore(DateTime.now())) {
+                                  // Agar time guzar gaya hai to agle din ke liye set karein ya error dikhayen
+                                  // fullScheduledTime = fullScheduledTime.add(const Duration(days: 1));
+                                  Utiles().toastMessage("Warning: Scheduled time is in the past!");
+                                }
+
+                                print("Scheduling for: $fullScheduledTime");
+
+                                NS.scheduleNotification(
+                                  id: event.docId.toString(),
+                                  title: "Reminder: ${event.Event}",
+                                  body: "You have an appointment today!",
+                                  scheduledTime: fullScheduledTime,
+                                );
+
+                                await FirebaseFirestore.instance
+                                    .collection("UserBio")
+                                    .doc(profileId)
+                                    .collection("Events")
+                                    .doc(event.docId)
+                                    .update({"isreminder": true});
+
+                                Utiles().toastMessage("Reminder Scheduled!");
+
+                              } catch (e) {
+                                Utiles().toastMessage("Error: ${e.toString()}");
+
+                              }
+                            },
                           ),
-
-                          // 2. TITLE (Bold Text)
-                          title: Text(
-                            event.Event.toString(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () {
+                              if (event.docId != null) {
+                                value.deleteEvent(event.docId!, profileId);
+                              }
+                            },
                           ),
-
-                          // 3. SUBTITLE (Date & Time with Icon)
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 6.0),
-                            child: Row(
-                              children: [
-                                Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey[600]),
-                                const SizedBox(width: 4),
-
-                                Expanded(
-                                 child: Row(children: [
-                                    Text(
-                                     "$dateString | ",
-                                     style: TextStyle(color: Colors.grey[700], fontSize: 13),
-                                     overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
-                                     maxLines: 1, // Sirf 1 line mein rakhe ga
-                                   ),
-                                   Text(
-                                     "$timeString",
-                                     style: TextStyle(color: Colors.grey[700], fontSize: 13),
-                                     overflow: TextOverflow.ellipsis, // Agar jagah kam ho to '...' dikhaye ga crash nahi karega
-                                     maxLines: 1, // Sirf 1 line mein rakhe ga
-                                   ),
-                                 ],),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // 4. TRAILING (Action Buttons Row)
-                          trailing: SizedBox(
-                            width:96 ,
-                            child: Row(
-                             mainAxisAlignment: MainAxisAlignment.end, // Zaroori hai
-                              children: [
-
-                                // --- NOTIFICATION BUTTON (With Logic) ---
-                                IconButton(
-                                  tooltip: "Set Reminder",
-                                  icon: const Icon(Icons.notifications_active_outlined, color: Colors.blueAccent),
-                                  onPressed: () async {
-                                    try {
-                                      // 1. Date Parse
-                                      DateTime datePart = DateFormat.yMMMd().parse(event.date!);
-                                      DateTime now = DateTime.now();
-
-                                      // 2. Default Time (00:00 Midnight)
-                                      DateTime fullScheduledTime = DateTime(
-                                        datePart.year,
-                                        datePart.month,
-                                        datePart.day,
-                                        0,
-                                        0,
-                                      );
-
-                                      // 3. Logic Check (Past Time)
-                                      if (fullScheduledTime.isBefore(now)) {
-                                        // Check: Kya ye "Aaj" ka din hai?
-                                        if (datePart.year == now.year &&
-                                            datePart.month == now.month &&
-                                            datePart.day == now.day) {
-
-                                          // Agar AJJ ka din hai, to Abhi + 1 minute set karo
-                                          fullScheduledTime = now.add(const Duration(minutes: 1));
-                                          Utiles().toastMessage("Event is today!");
-                                        } else {
-                                          // Agar Kal (Yesterday) tha
-                                          Utiles().toastMessage("Cannot set reminder for past dates!");
-                                          return;
-                                        }
-                                      }
-
-                                      // 4. Schedule Notification
-                                      // IMPORTANT: 'event.docId' ko string mein convert karke pass karein
-                                      // Notification Service khud usay .hashCode mein badal legi (agar updated hai)
-                                      NS.scheduleNotification(
-                                        id: event.docId.toString(),
-                                        title: "Appointment Reminder",
-                                        body: "${event.Event}",
-                                        scheduledTime: fullScheduledTime,
-                                      );
-
-                                      Utiles().toastMessage("Reminder Set Successfully!");
-
-                                      // 5. Update Database (Flag True karein)
-                                      // Spelling check kar lena: 'isreminder' ya 'isReminderActive'
-                                      await FirebaseFirestore.instance
-                                          .collection("Events")
-                                          .doc(event.docId)
-                                          .update({"isreminder": true});
-
-                                    } catch (e) {
-                                      //print("Error: $e");
-                                      Utiles().toastMessage("Error setting reminder");
-                                    }
-                                  },
-                                ),
-
-                                // --- DELETE BUTTON ---
-                                IconButton(
-                                  tooltip: "Delete",
-                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                  onPressed: () {
-                                    if (event.docId != null) {
-                                      // Confirm Dialog lagana acha hota hai, lekin direct delete bhi theek hai
-                                      value.deleteEvent(event.docId.toString());
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                  );
+                  ),
+                );
+              },
+            )),
+          ),
+        );
+      }),
+    );
+  }}
 
-                },
-              )
-              ),
-
-            ),
-          );
-
-      }));
-
-  }
-}
-
-/// A stateful widget that manages its own edit/display state.
-/// ADD Event Screen and Manage date time
+// Ensure EventCard also checks for null before saving
 class EventCard extends StatefulWidget {
   const EventCard({super.key});
 
@@ -242,233 +203,96 @@ class EventCard extends StatefulWidget {
 }
 
 class _EventCardState extends State<EventCard> {
-  // State variables
-
   final TextEditingController _textController = TextEditingController();
 
+  // ... (Keep your existing toggleEditSave, _pickDate, _pickTime functions) ...
 
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
+  // NOTE: Simply paste your existing controller/picker logic here or keep the class
+  // The important part is the SAVE button below
 
-  /// Toggles between editing and saving.
   void _toggleEditSave() {
-    final eventProvider =Provider.of<EventProvider>(context,listen: false);
-    // Get the CURRENT state
-    final wasEditing = eventProvider.isEditing;
-      eventProvider.setisEditing(!wasEditing);
-    if(wasEditing){
-      // "Save" action was pressed
-      // In a real app, you would save this data to your database
-      // or state management solution.
-      print('Saved: ${_textController.text.toString()}');
-      print('Date: ${eventProvider.date}');
-      print('Time: ${eventProvider.time}');
-
-    }
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    eventProvider.setisEditing(!eventProvider.isEditing);
   }
 
-  /// Shows the date picker dialog.
   Future<void> _pickDate(BuildContext context) async {
-    final eventProvider =Provider.of<EventProvider>(context,listen: false);
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: eventProvider.date ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != eventProvider.date) {
-     eventProvider.setDate(picked);
-    }
+    if (picked != null) eventProvider.setDate(picked);
   }
 
-  /// Shows the time picker dialog.
   Future<void> _pickTime(BuildContext context) async {
-    final eventProvider =Provider.of<EventProvider>(context,listen: false);
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: eventProvider.time ?? TimeOfDay.now(),
-    );
-
-
-    if (picked != null && picked != eventProvider.time) {
-
-      // Provider se selected date lein (agar null hai to aaj ki maan lein)
-      DateTime selectedDate = eventProvider.date ?? DateTime.now();
-      DateTime now = DateTime.now();
-
-      // Check karein ke kya user ne 'Aaj' ki date select ki hai?
-      bool isToday = selectedDate.year == now.year &&
-          selectedDate.month == now.month &&
-          selectedDate.day == now.day;
-
-      if (isToday) {
-        // Agar aaj ki date hai, to check karein ke time guzra hua to nahi?
-        // Logic: Agar Picked Hour abhi ke Hour se chota hai,
-        // YA Hour same hai lekin Minute chota hai.
-        if (picked.hour < now.hour ||
-            (picked.hour == now.hour && picked.minute < now.minute)) {
-
-          // User ko error dikhayen
-          Utiles().toastMessage("You cannot select a past time!");
-          return; // Function yahin rok dein, time set na karein
-        }
-      }
-
-
-
-
-      eventProvider.setTime(picked);
-    }
-  }
-
-  void addEvent(EventModel event,BuildContext context)async{
-     FirebaseFirestore db= FirebaseFirestore.instance;
-       try {
-         await db.collection("Events").doc(DateTime
-             .now()
-             .millisecondsSinceEpoch
-             .toString()).set(
-             EventModel.toMap(event,context)
-         ).then((value) =>
-         {
-           Utiles().toastMessage("Added Successfully"),
-         });
-       }catch(e){
-         Utiles().toastMessage(e.toString());
-       }
+        context: context, initialTime: eventProvider.time ?? TimeOfDay.now());
+    if (picked != null) eventProvider.setTime(picked);
   }
 
   @override
   Widget build(BuildContext context) {
-    return
-      Consumer<EventProvider>(builder: (context,value,child){
-
-      bool isEditing= value.isEditing;
-      return
-        Card(
+    return Consumer<EventProvider>(builder: (context, value, child) {
+      return Card(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Make the card wrap its content
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Row for Text Field and Edit/Save Button
-              Row(
-                children: [
-                  // The main text input
-                  Expanded(
-                    child: isEditing
-                        ? TextField(
-                      controller: _textController,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter your event title...',
-                        border: OutlineInputBorder(),
-
-                      ),
-                    )
-                        : Text(
-                      _textController.text.isEmpty
-                          ? 'No Event Title'
-                          : _textController.text,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                  // The Edit/Save icon button
-                  IconButton(
-                    icon: Icon(isEditing ? Icons.save : Icons.edit,color: primaryGreen,),
-                    onPressed: _toggleEditSave,
-                    tooltip: isEditing ? 'Save' : 'Edit',
-                  ),
-                ],
+              TextField(
+                controller: _textController,
+                decoration: const InputDecoration(hintText: 'Enter event title...'),
               ),
-              const Divider(),
-              // Row for Calendar Picker
+              const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.calendar_today,color: primaryGreen,),
-                title: Text(
-                  value.date == null
-                      ? 'Pick Date'
-                      : DateFormat.yMMMd().format(value.date!), // 'Nov 7, 2025'
-                ),
-                onTap: isEditing ? () => _pickDate(context) : null,
-                enabled: isEditing,
+                leading: const Icon(Icons.calendar_today, color: Colors.green),
+                title: Text(value.date == null ? 'Pick Date' : DateFormat.yMMMd().format(value.date!)),
+                onTap: () => _pickDate(context),
               ),
-              // Row for Time Picker
               ListTile(
-                leading: const Icon(Icons.access_time,color: primaryGreen,),
-                title: Text(
-                  value.time == null
-                      ? 'Pick Time'
-                      : value.time!.format(context), // '9:44 PM'
-                ),
-                onTap: isEditing ? () => _pickTime(context) : null,
-                enabled: isEditing,
+                leading: const Icon(Icons.access_time, color: Colors.green),
+                title: Text(value.time == null ? 'Pick Time' : value.time!.format(context)),
+                onTap: () => _pickTime(context),
               ),
-              const Divider(),
-              SizedBox(height: 8,),
-
+              const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  // 1. Data collect karen
-                  String eventTitle = _textController.text.trim();
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                onPressed: () async {
+                  final bioProvider = Provider.of<BioProvider>(context, listen: false);
 
-                  // Provider se DateTime aur TimeOfDay le rahe hain
-                  DateTime? selectedDate = value.date;
-                  TimeOfDay? selectedTime = value.time;
-                  // Check validation
-                  if (eventTitle.isEmpty || selectedDate == null || selectedTime == null) {
-                    Utiles().toastMessage("Please fill all details!");
+                  // --- FIX FOR SAVE BUTTON CRASH ---
+                  if (bioProvider.activeProfile == null || bioProvider.activeProfile!.docId == null) {
+                    Utiles().toastMessage("Error: No Profile Selected");
                     return;
                   }
 
-                  // 1. Current User ki ID nikalein
+                  if (_textController.text.isEmpty || value.date == null || value.time == null) {
+                    Utiles().toastMessage("Please fill all details");
+                    return;
+                  }
+
                   User? user = FirebaseAuth.instance.currentUser;
-
-                  if (user == null) {
-                    Utiles().toastMessage("User not logged in!");
-                    return;
-                  }
-
-                  // 2. CONVERSION (Yahan magic hoga)
-                  // DateTime ko String banaya (e.g., "Nov 25, 2025")
-                  String formattedDate = DateFormat.yMMMd().format(selectedDate);
-
-                  // TimeOfDay ko String banaya (e.g., "8:30 PM")
-                  String formattedTime = selectedTime.format(context);
-
-                  // 3. Model Create (Ab hum String pass kar rahe hain)
                   EventModel newEvent = EventModel(
-                    isreminder:false,
-                    Event:eventTitle,
-                    date:formattedDate, // String
-                    time :formattedTime, // String
-                      userId:user.uid,
+                    isreminder: false,
+                    Event: _textController.text.trim(),
+                    date: DateFormat.yMMMd().format(value.date!),
+                    time: value.time!.format(context),
+                    userId: user!.uid,
                   );
 
-                  // 4. Save to Firebase
-                  addEvent(newEvent, context);
+                  await value.addEvent(newEvent, bioProvider.activeProfile!.docId!);
 
-                  // 5. Close screen / logic
-                  final provider = Provider.of<IsAdding>(context, listen: false);
-                  provider.setisAdding(false);
+                  Provider.of<IsAdding>(context, listen: false).setisAdding(false);
                 },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all<Color>(Colors.green),
-                ),
-                child: Text(
-                  "Save",
-                  style: TextStyle(color: textColor, fontSize: 18),
-                ),
-              ),
+                child: const Text("Save Event", style: TextStyle(color: Colors.white)),
+              )
             ],
           ),
         ),
       );
-
     });
-
   }
 }

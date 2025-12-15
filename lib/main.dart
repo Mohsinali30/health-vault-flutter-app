@@ -7,6 +7,7 @@ import 'package:firebase_practice/utiles/event_notification.dart';
 import 'package:firebase_practice/views/AddEvents/EventScreen.dart';
 import 'package:firebase_practice/views/HomeScreen/homescreen.dart';
 import 'package:firebase_practice/views/Prescription/Precription_view.dart';
+import 'package:firebase_practice/views/Profiles/ProfileSelectioScreen.dart';
 import 'package:firebase_practice/views/Reminder_Screen/reminder_view.dart';
 import 'package:firebase_practice/views/Upload_Docs/Viewallfiles.dart';
 import 'package:firebase_practice/views/Upload_Docs/uploadScreen.dart';
@@ -73,6 +74,7 @@ class MyApp extends StatelessWidget {
               'UserProfile': (context) =>  MyProfileScreen(),
               'TipsView': (context) =>  ShowTipsScreen(),
               'ForgotScreen': (context)=> Forgotpasswordscreen(),
+              'SelectProfileScreen': (context)=> Profileselectioscreen(),
 
 
 

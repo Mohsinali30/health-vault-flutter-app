@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../View_view_Model/PrecripProvider.dart'; // Check your path
+import '../../View_view_Model/bioProvider.dart';
 import '../../utiles/Utiles.dart'; // Check your path
 
 class PrecriptionView extends StatefulWidget {
@@ -20,15 +21,23 @@ class _PrecriptionViewState extends State<PrecriptionView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<PrecripProvider>(context, listen: false).showFiles(context);
+      final bioProvider = Provider.of<BioProvider>(context, listen: false);
+      final profileId = bioProvider.activeProfile?.docId;
+
+      if(profileId != null) {
+        //Profile ID pass karein
+        Provider.of<PrecripProvider>(context, listen: false).showFiles(context, profileId);
+      }
     });
   }
 
 
   // Moved logic out of build method
   Future<void> _startUpload() async {
+    final bioProvider = Provider.of<BioProvider>(context,listen: false);
+    // Agar profile select nahi hai to safe side empty string ya return kar dein
+    final String profileId = bioProvider.activeProfile?.docId ?? "";
     final supabase = Supabase.instance.client;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     final provider = Provider.of<PrecripProvider>(context, listen: false);
     File? image = provider.image;
 
@@ -39,14 +48,14 @@ class _PrecriptionViewState extends State<PrecriptionView> {
     try {
       // 1. Create Unique Filename (Timestamp to avoid collision)
       final String fileName = "${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}";
-      final String filePath = '$uid/receipts/$fileName';
+      final String filePath = '$profileId/receipts/$fileName';
 
       // 2. Upload to Supabase
       await supabase.storage.from('preciptionorrecipt').upload(filePath, image);
 
       if (mounted) {
         Utiles().toastMessage('Upload Successful!');
-        provider.showFiles(context);
+        provider.showFiles(context,profileId);
         provider.clearImage();
       }
     } on StorageException catch (e) {
@@ -62,7 +71,14 @@ class _PrecriptionViewState extends State<PrecriptionView> {
   Widget build(BuildContext context) {
     return Consumer<PrecripProvider>(builder: (context, value, child) {
       return Scaffold(
+        backgroundColor: Colors.grey[50], // Light background for contrast
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+            onPressed: () {
+              Navigator.pop(context); // Navigates back
+            },
+          ),
           title: const Text("My Prescriptions", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.green,
           elevation: 0,
@@ -156,6 +172,8 @@ class _PrecriptionViewState extends State<PrecriptionView> {
   // WIDGET 2: Files Grid List (Completed)
   Widget _buildFilesList(PrecripProvider value) {
     final String uid = FirebaseAuth.instance.currentUser!.uid;
+    final bioProvider = Provider.of<BioProvider>(context);
+    final String profileId = bioProvider.activeProfile?.docId ?? "";
     // 1. Show Loading
     if (value.isLoading && value.allFiles.isEmpty) {
       return const Center(child: CircularProgressIndicator(color: Colors.green));
@@ -209,7 +227,7 @@ class _PrecriptionViewState extends State<PrecriptionView> {
           // Construct Public URL
           final imageUrl = Supabase.instance.client.storage
               .from('preciptionorrecipt')
-              .getPublicUrl('$uid/receipts/${file.name}');
+              .getPublicUrl('$profileId/receipts/${file.name}');
 
           return GestureDetector(
 
@@ -217,7 +235,7 @@ class _PrecriptionViewState extends State<PrecriptionView> {
               final uid = FirebaseAuth.instance.currentUser?.uid;
               if(uid == null) return;
               Navigator.push(context, MaterialPageRoute(builder: (context)=>ImageViewScreen(
-                imageUrl: imageUrl, fileName: file.name,uid: uid,) ));
+                imageUrl: imageUrl, fileName: file.name,uid: profileId,) ));
             },
             child: Container(
               decoration: BoxDecoration(

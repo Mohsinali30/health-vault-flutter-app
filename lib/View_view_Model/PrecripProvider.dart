@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utiles/Utiles.dart';
-import '../views/Prescription/ImageViewScreen.dart';
 
 class PrecripProvider with ChangeNotifier {
   File? _image;
@@ -69,14 +68,13 @@ class PrecripProvider with ChangeNotifier {
   }
 
 
-  Future<void>  showFiles(context)async{
+  Future<void>  showFiles(context,String selectedProfileId)async{
     setLoading(true);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     final supaBaseRef= Supabase.instance.client;
 
     try{
       final List<FileObject> responsefile = await supaBaseRef.storage.
-      from("preciptionorrecipt").list(path: "$uid/receipts");
+      from("preciptionorrecipt").list(path: "$selectedProfileId/receipts");
       setAllFiles(responsefile);
       notifyListeners();
     }catch(e){

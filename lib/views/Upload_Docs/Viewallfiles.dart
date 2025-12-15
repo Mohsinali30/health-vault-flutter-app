@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../Supabase_services/bucketoperations.dart';
+import '../../View_view_Model/bioProvider.dart';
 
 class Viewallfiles extends StatefulWidget {
 
@@ -20,18 +21,35 @@ class _ViewallfilesState extends State<Viewallfiles> {
   void initState() {
     // TODO: implement initState
     super.initState();
-  //  Data fetch ko frame khatam hone ke baad schedule karein
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<Loadingstate>(context, listen: false);
-      provider.showFiles(context, provider.category);
+
+      // 👇 BioProvider se ID lein
+      final bioProvider = Provider.of<BioProvider>(context, listen: false);
+      final profileId = bioProvider.activeProfile?.docId;
+
+      if(profileId != null) {
+        // 👇 ProfileId pass karein
+        provider.showFiles(context, provider.category, profileId);
+      }
     });
 }
 
   @override
   Widget build(BuildContext context) {
+    final bioProvider = Provider.of<BioProvider>(context);
+    final profileId = bioProvider.activeProfile?.docId ?? "";
    // final provider= Provider.of<Loadingstate>(context,listen: false);
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Light background for contrast
+
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+          onPressed: () {
+            Navigator.pop(context); // Navigates back
+          },
+        ),
         backgroundColor: primaryGreen,
         title: const Text(
           'Medical Record',
@@ -109,7 +127,6 @@ class _ViewallfilesState extends State<Viewallfiles> {
                 physics: const BouncingScrollPhysics(), // Agar parent scrollable hai to ye zaroori hai
                 itemBuilder: (context, index) {
                   final file = files[index];
-                  final uid = FirebaseAuth.instance.currentUser?.uid;
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Card(
@@ -122,7 +139,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6.0),
                         child: GestureDetector(
-                          onTap:() => BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}'),
+                          onTap:() => BucketOperation().DownloadAndOpen('$profileId/${provider.category}/${file.name}'),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
 
@@ -163,14 +180,14 @@ class _ViewallfilesState extends State<Viewallfiles> {
                                 IconButton(
                                   tooltip: "Download",
                                   icon: const Icon(Icons.download_rounded, color: Colors.blueAccent),
-                                  onPressed: () => BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}'),
+                                  onPressed: () => BucketOperation().DownloadAndOpen('$profileId/${provider.category}/${file.name}'),
                                 ),
 
                                 // --- DELETE BUTTON ---
                                 IconButton(
                                   tooltip: "Delete",
                                   icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                  onPressed: () => BucketOperation().DeleteFile('$uid/${provider.category}/${file.name}'),
+                                  onPressed: () => BucketOperation().DeleteFile('$profileId/${provider.category}/${file.name}'),
                                 ),
                               ],
                             ),
@@ -199,11 +216,13 @@ class _ViewallfilesState extends State<Viewallfiles> {
   Widget _buildCategoryChip(BuildContext context, dynamic provider, String label, String categoryId) {
     // Check: Kya ye button selected hai?
     bool isSelected = provider.category == categoryId;
+    final bioProvider = Provider.of<BioProvider>(context, listen: false);
+    final profileId = bioProvider.activeProfile?.docId;
 
     return InkWell(
       onTap: () {
         provider.setcategory(categoryId);
-        provider.showFiles(context, provider.category);
+        provider.showFiles(context, provider.category,profileId);
       },
       borderRadius: BorderRadius.circular(30), // Ripple effect gol ho
       child: AnimatedContainer(
