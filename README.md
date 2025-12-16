@@ -8,12 +8,12 @@
 
 | Dashboard | User Profile | Add Member | Notifications |
 |:---------:|:------------:|:----------:|:-------------:|
-| ![Dashboard]("<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h11m27s845" src="https://github.com/user-attachments/assets/851127d2-bc68-41a4-8d7d-47ce2dd3ff5f" />
-") | ![Profile]("<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h10m36s175" src="https://github.com/user-attachments/assets/c5c95395-b08c-43e2-a955-b904dfa2bafd" />
-") | ![Add Member]("<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h10m22s367" src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37" />
-") | ![Upload Screen]("<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h10m52s009" src="https://github.com/user-attachments/assets/39ceaf66-fc5e-4f52-81a5-b4ef02b4fbe9" />
+| ![Dashboard]("<img width="300" height="900" alt="vlcsnap-2025-12-17-01h11m27s845" src="https://github.com/user-attachments/assets/851127d2-bc68-41a4-8d7d-47ce2dd3ff5f" />
+") | ![Profile]("<img width="300" height="900" alt="vlcsnap-2025-12-17-01h10m36s175" src="https://github.com/user-attachments/assets/c5c95395-b08c-43e2-a955-b904dfa2bafd" />
+") | ![Add Member]("<img width="300" height="900" alt="vlcsnap-2025-12-17-01h10m22s367" src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37" />
+") | ![Upload Screen]("<img width="300" height="900" alt="vlcsnap-2025-12-17-01h10m52s009" src="https://github.com/user-attachments/assets/39ceaf66-fc5e-4f52-81a5-b4ef02b4fbe9" />
 ") |
- ![Rminder]("<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h17m34s655" src="https://github.com/user-attachments/assets/54cdf3c0-b121-48dc-93ee-13b026e76e01" />
+ ![Rminder]("<img width="300" height="900" alt="vlcsnap-2025-12-17-01h17m34s655" src="https://github.com/user-attachments/assets/54cdf3c0-b121-48dc-93ee-13b026e76e01" />
 ") |
 
 
