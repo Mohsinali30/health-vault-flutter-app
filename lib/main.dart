@@ -32,7 +32,7 @@ WidgetsFlutterBinding.ensureInitialized();
   );
 await Supabase.initialize(
     url: 'https://tsbzfoicjroilxbfaasw.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzYnpmb2ljanJvaWx4YmZhYXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzNDkxMDQsImV4cCI6MjA3NjkyNTEwNH0.J5IYK0_pUJwaeAFP1WIQIDH3w1PvHxlfikTx_TEn5Z8',
+  anonKey: '',
 );
 //  Sirf ek line likhni hai init karne ke liye
   await NotificationService().initNotification();
