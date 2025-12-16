@@ -92,15 +92,22 @@ class BioProvider with ChangeNotifier {
   // --- IMAGE LOGIC (Same as before) ---
   Future<void> PickImage() async {
     try {
-      final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+      final XFile? pickedImage = await picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 50
+      );
       if (pickedImage != null) {
         _profileimage = File(pickedImage.path);
         notifyListeners();
+      } else {
+      //  print("User ne image pick nahi ki");
       }
     } catch (e) {
-      Utiles().toastMessage("Can not Pick Image");
+    //  print("Pick Error: $e");
+      Utiles().toastMessage("Permission denied or Error: $e");
     }
   }
+
 
   Future<String?> UploadProfileImage(String uid) async {
     final db = Supabase.instance.client;

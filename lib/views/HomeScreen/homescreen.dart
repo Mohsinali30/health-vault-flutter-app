@@ -236,8 +236,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 //Reverse List Logic WooHhooooo
                 final reverselist = recentFiles.length -1-index;
                 final file = recentFiles[reverselist];
-                final uid =FirebaseAuth.instance.currentUser!.uid;
-
+                 final bio= Provider.of<BioProvider>(context,listen: false);
+                 final ProfileID= bio.activeProfile!.docId;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
                   child: Card(
@@ -287,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         trailing: InkWell(
                           borderRadius: BorderRadius.circular(30),
                           onTap: (){
-                            BucketOperation().DownloadAndOpen('$uid/${provider.category}/${file.name}');
+                            BucketOperation().DownloadAndOpen('$ProfileID/${provider.category}/${file.name}');
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

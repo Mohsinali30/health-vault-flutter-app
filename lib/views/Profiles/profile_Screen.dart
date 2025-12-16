@@ -247,55 +247,50 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
   }
 
   Widget _buildProfilePicture(BioProvider value) {
-    ImageProvider getImage() {
-      if (value.profileimage != null) return FileImage(value.profileimage!);
-      if (value.selectedProfile?.Profileimage != null && value.selectedProfile!.Profileimage!.isNotEmpty) {
-        return NetworkImage(value.selectedProfile!.Profileimage!);
-      }
-      return const AssetImage('assets/image.png');
-    }
-
     return Stack(
+      clipBehavior: Clip.none, // Zaroori hai taake icon bahar nazar aaye
       children: [
-        // Avatar Ring
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 5))
-            ],
-          ),
-          child: CircleAvatar(
-            radius: 60, // Bigger size
-            backgroundColor: Colors.grey[200],
-            backgroundImage: getImage(),
+        // 1. Circle Avatar
+        InkWell(
+          onTap: (){
+            value.PickImage();
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+            ),
+            child: CircleAvatar(
+              radius: 60,
+              backgroundImage: value.profileimage != null
+                  ? FileImage(value.profileimage!) as ImageProvider
+                  : (value.selectedProfile?.Profileimage != null && value.selectedProfile!.Profileimage!.isNotEmpty
+                  ? NetworkImage(value.selectedProfile!.Profileimage!)
+                  : const AssetImage('assets/image.png')),
+            ),
           ),
         ),
 
-        // Edit Camera Button
+        // 2. Camera Icon Button
         if (value.isEditing)
           Positioned(
-            bottom: 5,
+            bottom: 5, // Thora adjust kiya hai taake boundary ke andar rahe
             right: 5,
-            child: GestureDetector(
-              onTap: () => value.PickImage(),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: primaryGreen,
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
-                ),
-                child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Colors.green, // primaryGreen use karein
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+                ],
               ),
+              child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
             ),
           ),
       ],
     );
   }
-
   void _showDeleteDialog(BuildContext context, BioProvider value) {
     showDialog(
       context: context,
