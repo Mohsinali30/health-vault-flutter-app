@@ -1,4 +1,4 @@
-<img width="1080" height="2280" alt="vlcsnap-2025-12-17-01h31m22s471" src="https://github.com/user-attachments/assets/f068b78c-a268-4aae-b22f-bfc8fd13a220" /># 🏥 Health Vault
+# 🏥 Health Vault
 
 **Health Vault** is a cross-platform mobile application designed to digitize and centralize personal medical history. It empowers users to securely store prescriptions, manage family health profiles, and receive timely medication/appointment reminders, eliminating the hassle of managing fragmented physical medical records.
 
