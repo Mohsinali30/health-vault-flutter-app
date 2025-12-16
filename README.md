@@ -10,7 +10,7 @@
 |:---------:|:------------:|:----------:|:-------------:|
 <img src="https://github.com/user-attachments/assets/851127d2-bc68-41a4-8d7d-47ce2dd3ff5f" width="250" alt="Dashboard" />
 <img  src="https://github.com/user-attachments/assets/c5c95395-b08c-43e2-a955-b904dfa2bafd" width="250" alt="Profile" />
-<img  src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37" alt="" />
+<img  src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37"  width="250" alt="Profile Details" />
 <img src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37" width="250" alt="Upload Screen" />
 <img  src="https://github.com/user-attachments/assets/54cdf3c0-b121-48dc-93ee-13b026e76e01"  width="250" alt="Reminder" />
 
