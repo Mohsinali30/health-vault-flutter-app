@@ -171,7 +171,6 @@ class _PrecriptionViewState extends State<PrecriptionView> {
 
   // WIDGET 2: Files Grid List (Completed)
   Widget _buildFilesList(PrecripProvider value) {
-    final String uid = FirebaseAuth.instance.currentUser!.uid;
     final bioProvider = Provider.of<BioProvider>(context);
     final String profileId = bioProvider.activeProfile?.docId ?? "";
     // 1. Show Loading

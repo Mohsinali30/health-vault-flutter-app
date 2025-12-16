@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:flutter/material.dart';
@@ -155,7 +154,7 @@ class _ViewallfilesState extends State<Viewallfiles> {
 
                             // 2. FILE NAME (Bold & Clean)
                             title: Text(
-                              file.name ?? 'Unknown File',
+                              file.name,
                               maxLines: 1, // Sirf 1 line taake layout na toote
                               overflow: TextOverflow.ellipsis, // Lambe naam ke liye "..."
                               style: TextStyle(

@@ -65,12 +65,18 @@ class _ProfileselectioscreenState extends State<Profileselectioscreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: false,
-        title:  Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Welcome", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            Text(profileName.toString(), style: TextStyle(color: Colors.green, fontSize: 26, fontWeight: FontWeight.bold)),
-          ],
+        title:
+        Consumer<BioProvider>( // Consumer use karein takay switch hote hi name change ho
+          builder: (context, provider, child) {
+            final profileName = provider.activeProfile?.fullname ?? "Guest";
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Welcome", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(profileName, style: const TextStyle(color: Colors.green, fontSize: 26, fontWeight: FontWeight.bold)),
+              ],
+            );
+          },
         ),
         actions: [
           Container(

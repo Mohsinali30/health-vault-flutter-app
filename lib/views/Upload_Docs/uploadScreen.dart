@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/View_view_Model/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -74,7 +73,7 @@ class _UploadScreenState extends State<UploadScreen> {
       return;
     }
 
-    // ✅ CORRECT WAY: Value is accessed and used inside the function body
+    //CORRECT WAY: Value is accessed and used inside the function body
     final HealthCategory category = _selectedCategory!;
     final String folderName = category.name;
 
@@ -145,8 +144,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final fileToUpload= _selectedFile;
     provider.setloading(true);
 
-    final String file = fileToUpload!.path;
-    final fileName = fileToUpload.path.split('/').last;
+    final fileName = fileToUpload!.path.split('/').last;
     final String filpathname = '$profileId/$folderName/${DateTime.now().microsecondsSinceEpoch}_$fileName';
 
     // Create a unique file path within the bucket
@@ -359,7 +357,7 @@ class _UploadScreenState extends State<UploadScreen> {
               // Save the selected category value
               _selectedCategory = newValue;
             });
-            print('Selected Category Value: $_selectedCategory');
+           // print('Selected Category Value: $_selectedCategory');
           },
           items: HealthCategory.values.map<DropdownMenuItem<HealthCategory>>(
                 (HealthCategory category) {

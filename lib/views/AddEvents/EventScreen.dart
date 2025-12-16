@@ -4,7 +4,6 @@ import 'package:firebase_practice/View_view_Model/bioProvider.dart';
 import 'package:firebase_practice/View_view_Model/AddEventProvider.dart';
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:firebase_practice/models/eventModel.dart';
-import 'package:firebase_practice/utiles/AppColors.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -210,10 +209,6 @@ class _EventCardState extends State<EventCard> {
   // NOTE: Simply paste your existing controller/picker logic here or keep the class
   // The important part is the SAVE button below
 
-  void _toggleEditSave() {
-    final eventProvider = Provider.of<EventProvider>(context, listen: false);
-    eventProvider.setisEditing(!eventProvider.isEditing);
-  }
 
   Future<void> _pickDate(BuildContext context) async {
     final eventProvider = Provider.of<EventProvider>(context, listen: false);

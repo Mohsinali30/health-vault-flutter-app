@@ -92,7 +92,6 @@ final auth = FirebaseAuth.instance;
 
               // --- Sign In Button Section ---
               Consumer<Loadingstate>(builder: (context,value,child) {
-                bool isloading =value.isLoading;
                 return
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),

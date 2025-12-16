@@ -37,10 +37,11 @@ class BioProvider with ChangeNotifier {
   void setActiveProfile(BioModel profile) async{
     _activeProfile = profile;
     notifyListeners(); // UI will update to show selection
-    Utiles().toastMessage("Switched to ${profile.fullname}");
     final pref =await SharedPreferences.getInstance();
     if(profile.docId != null){
       await pref.setString('saved_profile_id', profile.docId!);
+      Utiles().toastMessage("Switched to ${profile.fullname}");
+
     }}
 
 
@@ -49,7 +50,7 @@ class BioProvider with ChangeNotifier {
     Future<void> loadLastSelectedProfile() async {
       final prefs = await SharedPreferences.getInstance();
       // Memory se ID nikalein
-      String? savedId = prefs.getString('last_selected_profile_id');
+      String? savedId = prefs.getString('saved_profile_id');
 
       // Agar ID mili aur hamari List khali nahi hai
       if (savedId != null && _profilesList.isNotEmpty) {
@@ -57,7 +58,8 @@ class BioProvider with ChangeNotifier {
           // List mein se wo banda dhoond kar active set karein
           _activeProfile = _profilesList.firstWhere((element) => element.docId == savedId);
         } catch (e) {
-          print("Saved profile shyad delete ho gayi ho");
+          Utiles().toastMessage("Profile doesn't exists");
+        //  print("Saved profile shyad delete ho gayi ho");
         }
       }
     }
@@ -142,7 +144,6 @@ class BioProvider with ChangeNotifier {
       }).toList();
 
       await loadLastSelectedProfile();
-
     } catch (e) {
       Utiles().toastMessage(e.toString());
     } finally {

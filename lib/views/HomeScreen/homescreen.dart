@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         // 2. TITLE: File Name
                         title: Text(
-                          file.name ?? 'Unknown File',
+                          file.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

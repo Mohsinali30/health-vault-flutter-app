@@ -1,8 +1,6 @@
 
 
 import 'dart:io';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_practice/utiles/Utiles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:open_filex/open_filex.dart';

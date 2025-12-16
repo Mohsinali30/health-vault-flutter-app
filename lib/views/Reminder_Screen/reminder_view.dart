@@ -1,7 +1,6 @@
 import 'package:firebase_practice/View_view_Model/eventProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/eventModel.dart';
 import '../../utiles/AppColors.dart';
