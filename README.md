@@ -13,10 +13,10 @@
 <img  src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37"  width="250" alt="Profile Details" />
 <img src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37" width="250" alt="Upload Screen" />
 <img  src="https://github.com/user-attachments/assets/54cdf3c0-b121-48dc-93ee-13b026e76e01"  width="250" alt="Reminder" />
-<img  src="<img  src="https://github.com/user-attachments/assets/bf2c72b5-b568-4236-9831-350bcd7a1a28" width="250" alt="About" />
-<img  src="<img  src="<img src="https://github.com/user-attachments/assets/df896036-4b01-42e3-818b-ca193f068f2c" width="250" alt="Records View" />
-<img  src="<img  src="<img src="<img  src="https://github.com/user-attachments/assets/1da9eaa5-4f78-4899-a3ae-42a85b9294c9" width="250" alt="Recipts  Upload Screen " />
-  <img  src="<img  src="<img src="<img  src="<img src="https://github.com/user-attachments/assets/0ddae9ed-2893-4764-8797-a56a2e375053" width="250" alt="Reminder View" />
+<img  src="https://github.com/user-attachments/assets/bf2c72b5-b568-4236-9831-350bcd7a1a28" width="250" alt="About" />
+<img  src="https://github.com/user-attachments/assets/df896036-4b01-42e3-818b-ca193f068f2c" width="250" alt="Records View" />
+<img  src="https://github.com/user-attachments/assets/1da9eaa5-4f78-4899-a3ae-42a85b9294c9" width="250" alt="Recipts  Upload Screen " />
+ <img  src="https://github.com/user-attachments/assets/0ddae9ed-2893-4764-8797-a56a2e375053" width="250" alt="Reminder View" />
 
 *(Note: Replace the paths above with your actual screenshot paths)*
 
