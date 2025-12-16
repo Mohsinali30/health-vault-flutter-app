@@ -1,6 +1,6 @@
 # 🏥 Health Vault - Family Medical Profile Manager
 
-**Health Vault** is a professional Flutter application designed to help users organize and manage medical profiles for themselves and their family members. It utilizes a hybrid cloud architecture, leveraging **Firebase** for real-time data and **Supabase** for secure media storage.
+**Health Vault** is a professional Flutter application designed to help users organize and manage medical records for themselves and their family members. It utilizes a hybrid cloud architecture, leveraging **Firebase** for real-time data and **Supabase** for secure media storage.
 
 ## ✨ Key Features
 
