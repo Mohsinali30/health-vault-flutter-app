@@ -52,10 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey[50], // Light background for contrast
+        backgroundColor: Colors.grey[50],
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: primaryGreen, // Top app bar green
+        backgroundColor: primaryGreen,
         title: const Text(
           'Health Vault',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
