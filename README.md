@@ -8,7 +8,7 @@
 
 | Dashboard | User Profile | Add Member | Notifications |
 |:---------:|:------------:|:----------:|:-------------:|
-<img src="https://github.com/user-attachments/assets/7a3c344f-3054-4872-accb-dca413faeed8" width="250" height="1200" alt="Dashboard" />
+<img src="https://github.com/user-attachments/assets/f51eed7c-7eb2-4851-9efc-a6f7e47be83e" width="250"  alt="Dashboard" />
 <img src="https://github.com/user-attachments/assets/851127d2-bc68-41a4-8d7d-47ce2dd3ff5f" width="250" alt="Dashboard" />
 <img  src="https://github.com/user-attachments/assets/c5c95395-b08c-43e2-a955-b904dfa2bafd" width="250" alt="Profile" />
 <img  src="https://github.com/user-attachments/assets/74fa5488-6269-4f55-b9fe-bd9836895b37"  width="250" alt="Profile Details" />
