@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../../View_view_Model/provider.dart';
 import '../../utiles/customtextfield.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -16,14 +15,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 1. Define GlobalKey for the Form
   final _formKey = GlobalKey<FormState>();
-
-
   final emailController = TextEditingController();
   final passController = TextEditingController();
 
-  // 3. Dispose controllers when the widget is removed
+  FirebaseAuth auth = FirebaseAuth.instance;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -31,190 +28,253 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleSignIn(BuildContext context, email,password) {
+  void _handleSignIn(BuildContext context) {
+    // Dismiss keyboard first for better UX
+    FocusScope.of(context).unfocus();
+
     final loadingprovider = Provider.of<Loadingstate>(context, listen: false);
 
-    // Check validation state using the FormKey
     if (_formKey.currentState!.validate()) {
       loadingprovider.setloading(true);
-      // Validation succeeded
-     auth.signInWithEmailAndPassword(email: email.text, password: password.text).then((value){
-       Utiles().toastMessage("Login Successfully");
-       // Navigate to HomeScreen
-       Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-       loadingprovider.setloading(false);
-     }).onError((error,stackTrace){
-       Utiles().toastMessage(error.toString());
-       loadingprovider.setloading(false);
-     })    ;
 
-
+      auth.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passController.text.trim()
+      ).then((value) {
+        Utiles().toastMessage("Login Successfully");
+        loadingprovider.setloading(false);
+        // Use pushReplacement to prevent going back to login screen on back press
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen())
+        );
+      }).onError((error, stackTrace) {
+        Utiles().toastMessage(error.toString());
+        loadingprovider.setloading(false);
+      });
     } else {
-      // Validation failed
-      Utiles().toastMessage("Enter email and password");
+      Utiles().toastMessage("Please enter valid email and password");
     }
   }
 
-  FirebaseAuth auth = FirebaseAuth.instance;
-
   @override
   Widget build(BuildContext context) {
-    return
-      Scaffold(
+    // Get screen size for responsive adjustments
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
       backgroundColor: primaryGreen,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 80),
-              // --- Icon/Logo Section ---
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(15.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15.0),
+      // GestureDetector dismisses keyboard when tapping empty space
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    size: 40.0,
-                    color: primaryGreen,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 60),
 
-              // --- Text Section ---
-              const Text(
-                'Welcome Back',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to access your health records',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14.0,
-                ),
-              ),
+                          // --- Icon/Logo Section ---
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(15.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  )
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.local_hospital_rounded, // Changed to a more medical icon
+                                size: 45.0,
+                                color: primaryGreen,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
 
-              const SizedBox(height: 40),
+                          // --- Text Section ---
+                          const Text(
+                            'Welcome Back',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28.0,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Sign in to access your health records',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 16.0,
+                            ),
+                          ),
 
-              // 4. Wrap Input Fields in the Form widget
-              Form(
-                key: _formKey, // Attach the key to the Form
-                child: Column(
-                  children: [
-                    // Ensure your CustomTextField uses 'controller' as the argument name
-                    CustomTextField(
-                      icon: Icons.email_outlined,
-                      hintText: 'Email',
-                      isPassword: false,
-                      controller: emailController, // Pass the controller
-                    ),
-                    CustomTextField(
-                      icon: Icons.lock_outline,
-                      hintText: 'Password',
-                      isPassword: true,
-                      controller: passController, // Pass the controller
-                    ),
-                  ],
-                ),
-              ),
+                          const SizedBox(height: 40),
 
-              const SizedBox(height: 30),
+                          // --- Form Section ---
+                          AutofillGroup( // Enables native autofill suggestions
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  CustomTextField(
+                                    icon: Icons.email_outlined,
+                                    hintText: 'Email',
+                                    isPassword: false,
+                                    controller: emailController,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  CustomTextField(
+                                    icon: Icons.lock_outline,
+                                    hintText: 'Password',
+                                    isPassword: true,
+                                    controller: passController,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
 
-              // --- Sign In Button Section ---
-            Consumer<Loadingstate>(builder: (context,value,child) {
-              bool isloading =value.isLoading;
-              return
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child:
-                ElevatedButton( 
-                  onPressed: () => _handleSignIn(context,emailController,passController),
-                    child:  isloading? const CircularProgressIndicator(color: whiteColor,strokeWidth: 3.0,) : Text(
-                      'Login ',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.w600,
+                          // --- Forgot Password ---
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, 'ForgotScreen');
+                              },
+                              child: const Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // --- Login Button ---
+                          Consumer<Loadingstate>(
+                            builder: (context, value, child) {
+                              return SizedBox(
+                                height: 55,
+                                child: ElevatedButton(
+                                  onPressed: () => _handleSignIn(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: primaryGreen,
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: value.isLoading
+                                      ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: primaryGreen,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                      : const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // --- Social Login Divider (Optional but good UX) ---
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.5))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  "Or continue with",
+                                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                                ),
+                              ),
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.5))),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+
+
+                          // --- Sticky Bottom Spacer ---
+                          const Spacer(),
+
+                          // --- Footer ---
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0, top: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Don't have an account? ",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushNamed(context, 'Signup');
+                                  },
+                                  child: const Text(
+                                    "Sign Up",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15.0,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                style: ButtonStyle(shadowColor: WidgetStatePropertyAll(Colors.black12,),elevation:WidgetStatePropertyAll(12)  ),
-                ),
-
-                
-              );}),
-              const SizedBox(height: 3),
-              TextButton(
-                onPressed: (){
-                  Navigator.pushNamed(context, 'ForgotScreen');
-                },
-                child: Text("Forgot Password ",style: TextStyle(
-                  color: textColor,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w600,
-                )
-                ),
-              ),
-              const SizedBox(height: 3),
-
-              Padding(
-                padding: const EdgeInsets.only(top: 120),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-
-                  children: [
-                    Text("don't have an account? ",style: TextStyle(
-                      color: textColor,
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w600,
-                    )
-                    ),
-                    TextButton(onPressed: (){
-                      Navigator.pushNamed(context, 'Signup');
-                    }, child: Text("Sign Up",style: TextStyle(
-                      color: whiteColor,
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w600,
-                    ),),)
-                  ],
-                ),
-              ),
-
-          /*
-        Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: TextButton(
-
-                // Call the handler function
-                onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginWithPhonenumber()));
-                },
-                child: Text(
-                  'Login with Phone Number ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ),*/
-
-            ],
+              );
+            },
           ),
         ),
       ),
     );
   }
+
+
 }

@@ -7,23 +7,22 @@ import 'package:provider/provider.dart';
 import '../../utiles/AppColors.dart';
 import '../../utiles/customtextfield.dart';
 
-
-
-
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
+
 class _SignUpScreenState extends State<SignUpScreen> {
-  // 1. Define GlobalKey for the Form
   final _formKey = GlobalKey<FormState>();
-  // 2. Define controllers inside the State class
+
   final emailController = TextEditingController();
   final passController = TextEditingController();
   final confirmpassController = TextEditingController();
-  // 3. Dispose controllers when the widget is removed
+
+  FirebaseAuth auth = FirebaseAuth.instance;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -32,154 +31,247 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _handleSignIn(BuildContext context,emailController,password){
-  final loadingprovider = Provider.of<Loadingstate>(context, listen: false);
-    // Check validation state using the FormKey
+  void _handleSignUp(BuildContext context) {
+    // 1. Hide Keyboard
+    FocusScope.of(context).unfocus();
+
+    final loadingprovider = Provider.of<Loadingstate>(context, listen: false);
+
+    // 2. Local Validation for empty fields
     if (_formKey.currentState!.validate()) {
-        loadingprovider.setloading(true);
-      // Validation succeeded
-      auth.createUserWithEmailAndPassword(email: emailController.text.toString(),
-          password: password.text.toString()).then((value){
-        Navigator.pushNamed(context, 'Login');
+
+      // 3. Check if passwords match
+      if (passController.text.trim() != confirmpassController.text.trim()) {
+        Utiles().toastMessage("Passwords do not match");
+        return;
+      }
+
+      loadingprovider.setloading(true);
+
+      // 4. Firebase Creation
+      auth.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passController.text.trim(),
+      ).then((value) {
         loadingprovider.setloading(false);
         Utiles().toastMessage("Account Created Successfully");
-      }
-      ).onError((error,stackTrace){
-             Utiles().toastMessage("User not found");
-             loadingprovider.setloading(false);
+
+        // Navigate back to Login or directly to Home depending on your flow
+        Navigator.pop(context);
+      }).onError((error, stackTrace) {
+        loadingprovider.setloading(false);
+        Utiles().toastMessage(error.toString());
       });
-    } else {
-      // Validation failed
-      Utiles().toastMessage('User not exsist');
     }
   }
-  FirebaseAuth auth= FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
+    // Get screen size for responsive adjustments
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: primaryGreen,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 80),
-              // --- Icon/Logo Section ---
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(15.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15.0),
+      // Dismiss keyboard on tap
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    size: 40.0,
-                    color: primaryGreen,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 40),
 
-              // --- Text Section ---
-              const Text(
-                'Welcome ',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to access your health records',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14.0,
-                ),
-              ),
+                          // --- Icon/Logo Section ---
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(15.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  )
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.person_add_alt_1_rounded, // Changed icon for Signup
+                                size: 45.0,
+                                color: primaryGreen,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 25),
 
-              const SizedBox(height: 40),
+                          // --- Text Section ---
+                          const Text(
+                            'Create Account',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28.0,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Join Health Vault to manage your life',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 16.0,
+                            ),
+                          ),
 
-              // 4. Wrap Input Fields in the Form widget
-              Form(
-                key: _formKey, // Attach the key to the Form
-                child: Column(
-                  children: [
-                    // Ensure your CustomTextField uses 'controller' as the argument name
-                    CustomTextField(
-                      icon: Icons.email_outlined,
-                      hintText: 'Email',
-                      isPassword: false,
-                      controller: emailController, // Pass the controller
-                    ),
-                    CustomTextField(
-                      icon: Icons.lock_outline,
-                      hintText: 'Password',
-                      isPassword: true,
-                      controller: passController, // Pass the controller
-                    ),
-                    CustomTextField(
-                      icon: Icons.lock_outline,
-                      hintText: 'Re-Enter-Password',
-                      isPassword: true,
-                      controller: confirmpassController, // Pass the controller
-                    ),
-                  ],
-                ),
-              ),
+                          const SizedBox(height: 30),
 
-              const SizedBox(height: 30),
+                          // --- Form Section ---
+                          AutofillGroup(
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  CustomTextField(
+                                    icon: Icons.email_outlined,
+                                    hintText: 'Email',
+                                    isPassword: false,
+                                    controller: emailController,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  CustomTextField(
+                                    icon: Icons.lock_outline,
+                                    hintText: 'Password',
+                                    isPassword: true,
+                                    controller: passController,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  CustomTextField(
+                                    icon: Icons.lock_reset,
+                                    hintText: 'Confirm Password',
+                                    isPassword: true,
+                                    controller: confirmpassController,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
 
-              // --- Sign In Button Section ---
-            Consumer<Loadingstate>(builder: (context,value,child) {
-              bool isloading =value.isLoading;
-              return
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child:
-                  ElevatedButton(
-                    onPressed: () => _handleSignIn(context,emailController,confirmpassController),
-                    child:  isloading? const CircularProgressIndicator(color: whiteColor,strokeWidth: 3.0,) : Text(
-                      'Sign Up ',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.w600,
+                          const SizedBox(height: 30),
+
+                          // --- Sign Up Button ---
+                          Consumer<Loadingstate>(
+                            builder: (context, value, child) {
+                              return SizedBox(
+                                height: 55,
+                                child: ElevatedButton(
+                                  onPressed: () => _handleSignUp(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: primaryGreen,
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: value.isLoading
+                                      ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: primaryGreen,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                      : const Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          // --- Social Divider ---
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.5))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  "Or sign up with",
+                                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                                ),
+                              ),
+                              Expanded(child: Divider(color: Colors.white.withOpacity(0.5))),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+
+
+                          // --- Sticky Footer Spacer ---
+                          const Spacer(),
+
+                          // --- Footer Text ---
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0, top: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Already have an account? ",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context); // Go back to login
+                                  },
+                                  child: const Text(
+                                    "Login",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15.0,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    style: ButtonStyle(shadowColor: WidgetStatePropertyAll(Colors.black12,),elevation:WidgetStatePropertyAll(12)  ),
                   ),
-                );
-            }),
-              const SizedBox(height: 6),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Already have an account? ",style: TextStyle(
-                color: textColor,
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-              )),
-                  TextButton(onPressed: (){
-                    Navigator.pushNamed(context, 'Login');
-                    }, child:
-                  Text("Login ",style: TextStyle(
-                    color: whiteColor,
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w600,
-                  ),))
-                ],
-              )
-            ],
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
+
 }
